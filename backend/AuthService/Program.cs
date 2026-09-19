@@ -1,4 +1,5 @@
 using AuthService.Data;
+using AuthService.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddSwaggerGen();
 // Registra el DbContext con la connection string de AuthDB (usuario auth_user).
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDB")));
+
+// Registra el servicio de generacion de JWT.
+builder.Services.AddScoped<JwtService>();
 
 var app = builder.Build();
 

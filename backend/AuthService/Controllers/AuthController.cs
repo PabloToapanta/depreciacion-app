@@ -1,5 +1,6 @@
 using AuthService.Data;
 using AuthService.DTOs;
+using AuthService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +11,12 @@ namespace AuthService.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AuthDbContext _db;
+    private readonly JwtService _jwt;
 
-    public AuthController(AuthDbContext db)
+    public AuthController(AuthDbContext db, JwtService jwt)
     {
         _db = db;
+        _jwt = jwt;
     }
 
     [HttpPost("login")]
@@ -30,13 +33,15 @@ public class AuthController : ControllerBase
             return Unauthorized(new { mensaje = "Usuario o contraseña incorrectos" });
         }
 
-        // 3. Credenciales validas -> 200 (el JWT se agrega en el siguiente paso)
+        // 3. Credenciales validas -> generar JWT y responder 200
+        var (token, expiraEn) = _jwt.GenerarToken(usuario);
+
         var response = new LoginResponse
         {
-            Token = string.Empty, // TODO: paso 4 - generar y firmar JWT
+            Token = token,
             Username = usuario.Username,
             NombreCompleto = usuario.NombreCompleto,
-            ExpiraEn = DateTime.UtcNow
+            ExpiraEn = expiraEn
         };
 
         return Ok(response);
