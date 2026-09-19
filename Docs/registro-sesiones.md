@@ -158,3 +158,25 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
 ### Pendientes
 - Día 3 — parte frontend (Leslie): formulario de activo + tabla en React.
 - Día 4 — ambos: JWT en header desde React, botón de PDF, prueba final de CORS.
+
+## Sesión 4b — Guía para Leslie + arreglo de integración (19/09/2026, escribió Pablo)
+
+### Lo que se hizo
+- Se agregó al agente (`.opencode/agent/coordinator.md`) la sección
+  "Guía especial: Leslie": protocolo de primera sesión para verificar su
+  entorno (Node.js, .NET SDK, Git, SQL Server, repo clonado, bases AuthDB/
+  AssetsDB creadas con `scripts/modelo-datos.sql`, y que pueda correr
+  frontend + ambos servicios), cómo ejecutar comandos en OpenCode de
+  escritorio, tono paciente y guía de Git paso a paso. Leslie solo empieza
+  a trabajar cuando su entorno esté listo.
+- **Arreglo de integración:** el `PackageReference` de JwtBearer en
+  `AssetsService.csproj` quedó sin commitear en la sesión 4 (el `dotnet add
+  package` lo modificó pero no se agregó al commit). En la máquina de Pablo
+  compilaba por tener el paquete instalado, pero un clon limpio habría
+  fallado. Se corrigió con `fix/assets-jwtbearer-package` mergeada a
+  `develop` (`bec5087`). Lección: verificar `git status` antes de cerrar
+  sesión para no dejar cambios sin commitear.
+
+### Pendientes
+- Día 3 — parte frontend (Leslie): formulario de activo + tabla en React.
+- Día 4 — ambos: JWT en header desde React, botón de PDF, prueba final de CORS.
