@@ -31,7 +31,7 @@ depreciación "reales" — este proyecto usa sus propias constantes simplificada
       saber de cada tema.
    b) Luego, al escribir el código, explica cada pieza en 3-5 líneas qué es y por qué
       se usa así, en términos que alguien de Java/SQL entienda (comparaciones con
-      Spring Boot, Hibernate/JPA, etc. cuando ayuden).
+      JDBC, Swing, etc. cuando ayuden).
    No des código sin la explicación corta primero — es un proyecto para aprender, no
    solo para entregar.
 

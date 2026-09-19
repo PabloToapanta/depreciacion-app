@@ -57,8 +57,10 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
   - Paquetes NuGet: `Microsoft.EntityFrameworkCore.SqlServer` 8.0.11 y
     `Microsoft.AspNetCore.Authentication.JwtBearer` 8.0.11 (versión 8.x porque el
     proyecto apunta a net8.0; la 10.x requiere .NET 10).
-  - Modelo `Usuario` (mapea tabla `Usuarios` con DataAnnotations, ~ @Entity de JPA).
-  - `AuthDbContext` (DbContext con `DbSet<Usuario>`, ~ EntityManager).
+  - Modelo `Usuario` (mapea tabla `Usuarios` con DataAnnotations, ~ el mapeo que en
+    JDBC se hace a mano con ResultSet).
+  - `AuthDbContext` (DbContext con `DbSet<Usuario>`, ~ Connection + Statement de JDBC
+    pero devolviendo objetos en vez de ResultSet).
   - Connection string en `appsettings.json` con el login `auth_user` (no `sa`).
   - Configuración JWT en `appsettings.json`: Key, Issuer, Audience, ExpireMinutes.
 - DTOs: `LoginRequest` y `LoginResponse`.
