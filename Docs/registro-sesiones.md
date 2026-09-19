@@ -86,3 +86,41 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
 ### Pendientes
 - Día 2 — parte frontend (Leslie): tutorial de React + pantalla de login.
 - Día 3 — Pablo: endpoints de activos y depreciación en AssetsService.
+
+## Sesión 3 — Día 3: Lógica de depreciación + formulario, parte backend (19/09/2026, escribió Pablo)
+
+### Lo que se hizo
+- Feature branch `feature/assets-calculo-depreciacion` (Pablo, backend).
+- Infraestructura de datos en AssetsService:
+  - Paquete `Microsoft.EntityFrameworkCore.SqlServer` 8.0.11.
+  - Modelos `Activo` y `Categoria` (mapean tablas de AssetsDB; `Activo` tiene
+    propiedad de navegación a `Categoria` ~ JOIN con objetos).
+  - `AssetsDbContext` con `DbSet<Activo>` y `DbSet<Categoria>`.
+  - Connection string con el login `assets_user` (no `sa`).
+- DTOs: `ActivoRequest`, `ActivoResponse`, `FilaDepreciacion`, `TablaDepreciacionResponse`.
+- `DepreciacionService`: lógica pura de cálculo con las fórmulas de AGENTS.md
+  (VD = precio − precio×0.10; VDA = VD / vida_útil; VDM = VDA / 12). Primera fila
+  del mes de compra con dep=0; se detiene en la fecha de corte o al fin de vida útil.
+- `ActivosController` (documentado en Swagger):
+  - `POST /api/activos` — crea activo (valida categoría → 400 si no existe).
+  - `GET /api/activos` — lista activos.
+  - `GET /api/activos/{id}` — un activo.
+  - `GET /api/activos/{id}/depreciacion` — tabla mensual (404 si no existe).
+
+### Pruebas realizadas (curl contra http://localhost:5002)
+- Tecnología $900, 01/01/2023, corte 01/01/2026 → **VDM=22.5**, 37 filas,
+  última fila 01/01/2026 con acumulado=810 y real=90.00 (ejemplo de AGENTS.md ✅).
+- Vehículos $10000, 01/01/2024, corte 01/01/2027 → VDM=150, se detiene en la
+  fecha de corte (acumulado=5400, real=4600) antes del fin de vida útil de 5 años ✅.
+- Categoría inexistente → 400 ✅.
+
+### Decisiones / notas
+- `DepreciacionService` separado del controller (lógica pura, fácil de probar).
+- `decimal` (sufijo `m`) para montos de dinero, no `double`.
+- Método `Mapear()` privado para evitar código duplicado en los 3 endpoints.
+- `feature/assets-calculo-depreciacion` mergeada a `develop`. **Excepción
+  documentada:** Leslie no revisó el PR por no estar disponible; revisará al volver.
+
+### Pendientes
+- Día 3 — parte frontend (Leslie): formulario de activo + tabla en React.
+- Día 4 — ambos: JWT en header desde React, validación en AssetsService, PDF, CORS.
