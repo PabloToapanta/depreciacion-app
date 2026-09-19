@@ -19,7 +19,16 @@ public class AuthController : ControllerBase
         _jwt = jwt;
     }
 
+    /// <summary>
+    /// Inicia sesion con usuario y contraseña.
+    /// </summary>
+    /// <param name="request">Credenciales del usuario (username y password).</param>
+    /// <returns>JWT firmado si las credenciales son validas.</returns>
+    /// <response code="200">Credenciales validas: devuelve el JWT.</response>
+    /// <response code="401">Usuario o contraseña incorrectos.</response>
     [HttpPost("login")]
+    [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         // 1. Buscar el usuario por nombre de usuario (LINQ ~ JPQL)
