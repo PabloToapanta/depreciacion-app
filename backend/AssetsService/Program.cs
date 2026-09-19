@@ -1,7 +1,10 @@
 using System.Reflection;
+using System.Text;
 using AssetsService.Data;
 using AssetsService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,24 @@ builder.Services.AddDbContext<AssetsDbContext>(options =>
 // Registra el servicio de calculo de depreciacion.
 builder.Services.AddScoped<DepreciacionService>();
 
+// Autenticacion con JWT: valida los tokens que emite AuthService (misma clave,
+// mismo issuer y misma audience). Sin token valido -> 401 automatico.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+    });
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,6 +56,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// UseAuthentication debe ir ANTES de UseAuthorization: primero se identifica
+// quien llama (JWT), luego se decide si puede pasar ([Authorize]).
+app.UseAuthentication();
 
 app.UseAuthorization();
 
