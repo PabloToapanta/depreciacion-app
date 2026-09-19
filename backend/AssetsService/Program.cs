@@ -1,4 +1,5 @@
 using AssetsService.Data;
+using AssetsService.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddSwaggerGen();
 // Registra el DbContext con la connection string de AssetsDB (usuario assets_user).
 builder.Services.AddDbContext<AssetsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AssetsDB")));
+
+// Registra el servicio de calculo de depreciacion.
+builder.Services.AddScoped<DepreciacionService>();
 
 var app = builder.Build();
 
