@@ -6,7 +6,7 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 ## Día 1 — Setup y arquitectura (ambos, mob programming)
 
 - [ ] todo | ambos | Instalar .NET SDK, SQL Server, Node.js
-- [ ] todo | ambos | Crear tablas Usuarios y Activos en SQL Server
+- [x] done | ambos | Crear tablas Usuarios y Activos en SQL Server
 - [x] done | ambos | Crear proyecto AuthService (.NET) vacío que responde
 - [x] done | ambos | Crear proyecto AssetsService (.NET) vacío que responde
 - [x] done | ambos | Crear proyecto React con Vite vacío
