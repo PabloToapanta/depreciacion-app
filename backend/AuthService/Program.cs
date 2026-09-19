@@ -25,6 +25,16 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
 // Registra el servicio de generacion de JWT.
 builder.Services.AddScoped<JwtService>();
 
+// CORS: permite que el frontend de React (Vite en :5173) llame a este servicio.
+// Sin esto, el navegador bloquea las peticiones entre origenes distintos.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFrontend", policy =>
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,6 +45,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Activa la politica CORS antes de la autenticacion/autorizacion.
+app.UseCors("PermitirFrontend");
 
 app.UseAuthorization();
 
