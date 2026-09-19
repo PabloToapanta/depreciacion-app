@@ -1,0 +1,24 @@
+# === .NET ===
+bin/
+obj/
+*.user
+*.suo
+.vs/
+appsettings.Development.json.bak
+
+# === Node / React / Vite ===
+node_modules/
+dist/
+.env
+.env.local
+npm-debug.log*
+
+# === Editor / OS ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# === SQL Server local (si usan LocalDB) ===
+*.mdf
+*.ldf
