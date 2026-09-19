@@ -1,3 +1,4 @@
+using System.Reflection;
 using AuthService.Data;
 using AuthService.Services;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Lee los comentarios XML (/// summary) para documentar los endpoints en Swagger
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
+});
 
 // Registra el DbContext con la connection string de AuthDB (usuario auth_user).
 builder.Services.AddDbContext<AuthDbContext>(options =>
