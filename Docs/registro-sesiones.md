@@ -46,5 +46,5 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
 
 ### Pendientes
 - Día 2 — Login con JWT:
-  - Leslie: endpoint de login en AuthService + generación/firma de JWT.
-  - Pablo: tutorial de React (useState, fetch) + pantalla de login que consume AuthService.
+  - Pablo: endpoint de login en AuthService + generación/firma de JWT.
+  - Leslie: tutorial de React (useState, fetch) + pantalla de login que consume AuthService.
