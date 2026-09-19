@@ -10,7 +10,7 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 - [ ] todo | ambos | Crear proyecto AuthService (.NET) vacío que responde
 - [ ] todo | ambos | Crear proyecto AssetsService (.NET) vacío que responde
 - [ ] todo | ambos | Crear proyecto React con Vite vacío
-- [ ] doing | ambos | Repo de GitHub creado, primer commit
+- [x] done | ambos | Repo de GitHub creado, primer commit
 
 ## Día 2 — Login con JWT
 
