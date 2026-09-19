@@ -28,6 +28,16 @@ builder.Services.AddDbContext<AssetsDbContext>(options =>
 // Registra el servicio de calculo de depreciacion.
 builder.Services.AddScoped<DepreciacionService>();
 
+// CORS: permite que el frontend de React (Vite en :5173) llame a este servicio.
+// Sin esto, el navegador bloquea las peticiones entre origenes distintos.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFrontend", policy =>
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 // Autenticacion con JWT: valida los tokens que emite AuthService (misma clave,
 // mismo issuer y misma audience). Sin token valido -> 401 automatico.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -56,6 +66,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Activa la politica CORS antes de la autenticacion/autorizacion.
+app.UseCors("PermitirFrontend");
 
 // UseAuthentication debe ir ANTES de UseAuthorization: primero se identifica
 // quien llama (JWT), luego se decide si puede pasar ([Authorize]).
