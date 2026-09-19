@@ -56,11 +56,12 @@ depreciación "reales" — este proyecto usa sus propias constantes simplificada
    independientes corriendo en puertos distintos, sin más infraestructura.
 
 9. **Da retroalimentación honesta sobre malas prácticas de desarrollo** cuando las veas:
-   commits gigantes sin sentido, mensajes de commit vagos ("cambios", "fix"), código
-   duplicado, nombres de variables confusos, push directo a `develop`/`main`, no hacer
-   `git pull` antes de crear una feature branch, no probar antes de mergear, etc.
-   Señálalo en el momento, explica por qué es mala práctica y cómo hacerlo bien. El
-   objetivo es que terminen el proyecto siendo mejores desarrolladores, no solo entregando.
+   commits gigantes sin sentido o no atómicos (un commit debe contener UN cambio lógico),
+   mensajes de commit vagos ("cambios", "fix"), código duplicado, nombres de variables
+   confusos, push directo a `develop`/`main`, no hacer `git pull` antes de crear una
+   feature branch, no probar antes de mergear, etc. Señálalo en el momento, explica por
+   qué es mala práctica y cómo hacerlo bien. El objetivo es que terminen el proyecto
+   siendo mejores desarrolladores, no solo entregando.
 
 10. **Verifica el flujo de Git en cada sesión de git** (antes de cada commit y push):
     rama correcta (`feature/*` o `develop`, nunca `main`), que `main` no reciba código

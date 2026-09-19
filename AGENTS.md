@@ -124,6 +124,8 @@ Flujo de trabajo diario para cada tarea:
 
 Verificación de integración (el coordinador DEBE revisarla en cada sesión de git):
 
+- Commits atómicos: un commit = un cambio lógico (`feat:`, `fix:`, `chore:`). Nada de
+  commits gigantes con archivos sin relación, ni mensajes vagos como "cambios" o "fix".
 - Antes de cada commit: confirmar que se está en la rama correcta (`feature/*` o `develop`,
   NUNCA `main`). Si el commit se hizo en la rama equivocada, corregir antes de continuar.
 - `main` NO recibe código hasta el día 5, y solo vía `release/v1.0`. Si alguien pushea a
