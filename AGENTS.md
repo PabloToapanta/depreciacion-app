@@ -26,8 +26,10 @@ sin API Gateway ni contenedores. React consume ambos directamente por HTTP.
    - Valida el JWT en cada request (mismo secreto/clave que AuthService)
    - Tabla `Activos` (tipo, precio_compra, fecha_compra)
 
-Ambos servicios pueden compartir la misma base SQL Server (dos schemas o simplemente
-tablas separadas), no hace falta separar en dos bases de datos distintas.
+Cada servicio tiene SU PROPIA base de datos SQL Server (no comparten base):
+
+- AuthService → base `AuthDB` con la tabla `Usuarios`
+- AssetsService → base `AssetsDB` con la tabla `Activos`
 
 ## Reglas de negocio (definición oficial del proyecto — NO usar otras fuentes ni otros porcentajes)
 
@@ -59,8 +61,9 @@ VDM = VDA / 12
 1. Tipo de activo (uno de los 4 de la tabla)
 2. Fecha de compra
 3. Precio del activo
-4. Fecha de corte (opcional): si no se indica, se calcula hasta que el activo cumpla
-   su vida útil completa
+4. Fecha de corte (OBLIGATORIA): el usuario siempre la ingresa. La tabla se calcula
+   desde el mes de compra hasta la fecha de corte (o hasta el fin de la vida útil si
+   la fecha de corte la supera).
 
 ## Salida esperada: tabla mensual
 
@@ -118,6 +121,20 @@ Flujo de trabajo diario para cada tarea:
 5. Pull request hacia `develop` — con solo 2 personas, el otro revisa rápido (no hace falta
    proceso pesado, pero sí que el compañero vea el código antes de mergear, para que ambos
    entiendan todo el sistema).
+
+Verificación de integración (el coordinador DEBE revisarla en cada sesión de git):
+
+- Antes de cada commit: confirmar que se está en la rama correcta (`feature/*` o `develop`,
+  NUNCA `main`). Si el commit se hizo en la rama equivocada, corregir antes de continuar.
+- `main` NO recibe código hasta el día 5, y solo vía `release/v1.0`. Si alguien pushea a
+  `main` antes, es un error de integración: detener y corregir.
+- Antes de crear una feature branch: `git checkout develop && git pull` para partir de la
+  versión más reciente (evita conflictos de merge al final).
+- Los cambios a `develop` entran por pull request revisada por el compañero, no por push
+  directo. La única excepción son los archivos de coordinación (AGENTS.md, TASKS.md,
+  opencode.json, .opencode/) que el coordinador actualiza directamente en `develop`.
+- Después de mergear una feature branch a `develop`: borrar la rama feature local y remota
+  para no acumular ramas muertas.
 
 El coordinador debe recordar este flujo al inicio de cada sesión y verificar que los commits
 se hagan en la rama correcta.

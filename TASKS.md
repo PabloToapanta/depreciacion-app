@@ -14,17 +14,17 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 
 ## Día 2 — Login con JWT
 
-- [ ] todo | persona A | Endpoint de login en AuthService (valida usuario/clave)
-- [ ] todo | persona A | Generación y firma de JWT
-- [ ] todo | persona B | Tutorial rápido de React (useState, fetch)
-- [ ] todo | persona B | Pantalla de login en React que consume AuthService
+- [ ] todo | Leslie | Endpoint de login en AuthService (valida usuario/clave)
+- [ ] todo | Leslie | Generación y firma de JWT
+- [ ] todo | Pablo | Tutorial rápido de React (useState, fetch)
+- [ ] todo | Pablo | Pantalla de login en React que consume AuthService
 
 ## Día 3 — Lógica de depreciación + formulario
 
-- [ ] todo | persona A | Endpoint POST activo en AssetsService
-- [ ] todo | persona A | Endpoint GET tabla de depreciación (aplica fórmulas de AGENTS.md)
-- [ ] todo | persona B | Formulario de activo (tipo, precio, fecha compra, fecha corte)
-- [ ] todo | persona B | Tabla en React que muestra el resultado
+- [ ] todo | Leslie | Endpoint POST activo en AssetsService
+- [ ] todo | Leslie | Endpoint GET tabla de depreciación (aplica fórmulas de AGENTS.md)
+- [ ] todo | Pablo | Formulario de activo (tipo, precio, fecha compra, fecha corte)
+- [ ] todo | Pablo | Tabla en React que muestra el resultado
 
 ## Día 4 — Integración + PDF (ambos)
 
