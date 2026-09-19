@@ -15,8 +15,8 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 
 ## Día 2 — Login con JWT
 
-- [ ] todo | Pablo | Endpoint de login en AuthService (valida usuario/clave)
-- [ ] todo | Pablo | Generación y firma de JWT
+- [x] done | Pablo | Endpoint de login en AuthService (valida usuario/clave)
+- [x] done | Pablo | Generación y firma de JWT
 - [ ] todo | Leslie | Tutorial rápido de React (useState, fetch)
 - [ ] todo | Leslie | Pantalla de login en React que consume AuthService
 
