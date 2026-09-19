@@ -94,3 +94,46 @@ GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Activos_Categoria')
     CREATE INDEX IX_Activos_Categoria ON dbo.Activos(categoria_id);
 GO
+
+-- ============================================================
+-- USUARIOS DE ACCESO POR SERVICIO (principio de menor privilegio)
+-- Cada servicio se conecta con su PROPIO login de SQL Server,
+-- con acceso SOLO a su base. Nunca se usa 'sa' en las
+-- connection strings de los servicios.
+--   auth_user   -> solo AuthDB    (AuthService)
+--   assets_user -> solo AssetsDB  (AssetsService)
+-- Permisos: db_datareader + db_datawriter (leer/escribir datos;
+-- las tablas ya existen, los servicios no necesitan crearlas).
+-- ============================================================
+
+-- Login de AuthService
+IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'auth_user')
+    CREATE LOGIN auth_user WITH PASSWORD = 'AuthUser123!';
+GO
+
+USE AuthDB;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'auth_user')
+    CREATE USER auth_user FOR LOGIN auth_user;
+GO
+
+ALTER ROLE db_datareader ADD MEMBER auth_user;
+ALTER ROLE db_datawriter ADD MEMBER auth_user;
+GO
+
+-- Login de AssetsService
+IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'assets_user')
+    CREATE LOGIN assets_user WITH PASSWORD = 'AssetsUser123!';
+GO
+
+USE AssetsDB;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'assets_user')
+    CREATE USER assets_user FOR LOGIN assets_user;
+GO
+
+ALTER ROLE db_datareader ADD MEMBER assets_user;
+ALTER ROLE db_datawriter ADD MEMBER assets_user;
+GO
