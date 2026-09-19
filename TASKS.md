@@ -22,8 +22,8 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 
 ## Día 3 — Lógica de depreciación + formulario
 
-- [ ] todo | Pablo | Endpoint POST activo en AssetsService
-- [ ] todo | Pablo | Endpoint GET tabla de depreciación (aplica fórmulas de AGENTS.md)
+- [x] done | Pablo | Endpoint POST activo en AssetsService
+- [x] done | Pablo | Endpoint GET tabla de depreciación (aplica fórmulas de AGENTS.md)
 - [ ] todo | Leslie | Formulario de activo (tipo, precio, fecha compra, fecha corte)
 - [ ] todo | Leslie | Tabla en React que muestra el resultado
 
