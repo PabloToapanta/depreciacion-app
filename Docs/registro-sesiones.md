@@ -124,3 +124,37 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
 ### Pendientes
 - Día 3 — parte frontend (Leslie): formulario de activo + tabla en React.
 - Día 4 — ambos: JWT en header desde React, validación en AssetsService, PDF, CORS.
+
+## Sesión 4 — Día 4: JWT en AssetsService + CORS, parte backend (19/09/2026, escribió Pablo)
+
+### Lo que se hizo
+- Feature branch `feature/assets-jwt` (Pablo, backend).
+- AssetsService ahora valida el JWT antes de responder:
+  - Paquete `Microsoft.AspNetCore.Authentication.JwtBearer` 8.0.11.
+  - Sección `Jwt` en `appsettings.json` con la MISMA clave/issuer/audience que
+    AuthService (así confía en los tokens que AuthService emite).
+  - `AddAuthentication().AddJwtBearer(...)` en `Program.cs` (valida firma,
+    issuer, audience y expiración) + `app.UseAuthentication()` antes de
+    `UseAuthorization()`.
+  - `[Authorize]` en `ActivosController` (protege los 4 endpoints).
+- CORS en AMBOS servicios: política `PermitirFrontend` que permite el origen
+  `http://localhost:5173` (Vite) con cualquier header y método.
+
+### Pruebas realizadas (curl)
+- Sin token → 401 ✅
+- Token inválido → 401 ✅
+- Token real de AuthService (login admin/Admin123!) → 200 ✅
+- CORS: OPTIONS con Origin `http://localhost:5173` → responde
+  `Access-Control-Allow-Origin: http://localhost:5173` en ambos servicios ✅
+- CORS: Origin `http://evil.com` → sin cabecera CORS (el navegador lo bloquea) ✅
+
+### Decisiones / notas
+- El CORS de AuthService se commiteó dentro de `feature/assets-jwt` porque es
+  parte de la misma tarea "Resolver CORS entre servicios" (ambos servicios).
+- Falta la prueba final de CORS desde React (cuando Leslie tenga el frontend).
+- El middleware JwtBearer es el "validador automático": sin token válido
+  responde 401 sin ejecutar el código del controller.
+
+### Pendientes
+- Día 3 — parte frontend (Leslie): formulario de activo + tabla en React.
+- Día 4 — ambos: JWT en header desde React, botón de PDF, prueba final de CORS.

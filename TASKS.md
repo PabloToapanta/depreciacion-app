@@ -30,9 +30,9 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 ## Día 4 — Integración + PDF (ambos)
 
 - [ ] todo | ambos | JWT viajando en header Authorization desde React
-- [ ] todo | ambos | AssetsService valida el JWT antes de responder
+- [x] done | Pablo | AssetsService valida el JWT antes de responder
 - [ ] todo | ambos | Botón de exportar a PDF funcionando
-- [ ] todo | ambos | Resolver CORS entre servicios
+- [x] done | Pablo | Resolver CORS entre servicios (config + verificación con curl; falta prueba final desde React)
 
 ## Día 5 — Pruebas y documentación (ambos)
 
