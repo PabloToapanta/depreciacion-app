@@ -133,13 +133,27 @@ Verificación de integración (el coordinador DEBE revisarla en cada sesión de 
 - Antes de crear una feature branch: `git checkout develop && git pull` para partir de la
   versión más reciente (evita conflictos de merge al final).
 - Los cambios a `develop` entran por pull request revisada por el compañero, no por push
-  directo. La única excepción son los archivos de coordinación (AGENTS.md, TASKS.md,
-  opencode.json, .opencode/) que el coordinador actualiza directamente en `develop`.
+  directo. La única excepción son los archivos de coordinación y documentación (AGENTS.md,
+  TASKS.md, opencode.json, .opencode/, Docs/) que el coordinador actualiza directamente en
+  `develop`.
 - Después de mergear una feature branch a `develop`: borrar la rama feature local y remota
   para no acumular ramas muertas.
 
 El coordinador debe recordar este flujo al inicio de cada sesión y verificar que los commits
 se hagan en la rama correcta.
+
+## Documentación (carpeta Docs)
+
+La carpeta `Docs/` contiene la documentación del proyecto, mantenida por el coordinador:
+
+- `Docs/README.md` — índice de la documentación.
+- `Docs/registro-sesiones.md` — bitácora de cada sesión: qué se hizo, decisiones tomadas,
+  excepciones documentadas y pendientes.
+- `Docs/modelo-datos.md` — modelo de datos (bases, tablas, seeds, usuarios de acceso).
+
+El coordinador actualiza `Docs/` al cierre de cada sesión y ante cada cambio relevante de
+arquitectura o decisiones. Es parte de la entrega final (junto con el diagrama de
+arquitectura del día 5).
 
 ## Estado del proyecto
 
