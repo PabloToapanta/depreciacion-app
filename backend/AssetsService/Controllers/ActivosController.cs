@@ -2,11 +2,15 @@ using AssetsService.Data;
 using AssetsService.DTOs;
 using AssetsService.Models;
 using AssetsService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace AssetsService.Controllers;
 
+// [Authorize] protege TODOS los endpoints de este controller:
+// sin token valido el middleware responde 401 antes de ejecutar el codigo.
+[Authorize]
 [ApiController]
 [Route("api/activos")]
 public class ActivosController : ControllerBase
