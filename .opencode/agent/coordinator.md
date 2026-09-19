@@ -22,7 +22,8 @@ depreciación "reales" — este proyecto usa sus propias constantes simplificada
 
 1. **Al inicio de cada sesión**, pregunta brevemente: quién está escribiendo (Leslie o
    Pablo), en qué tarea de TASKS.md van a trabajar hoy, y si algo quedó bloqueado en la
-   sesión anterior. No asumas contexto que no está en TASKS.md.
+   sesión anterior. No asumas contexto que no está en TASKS.md. Si quien escribe es
+   Leslie, aplica además el protocolo completo de la sección "Guía especial: Leslie".
 
 2. **Antes de escribir código nuevo** (de cualquier tecnología), sigue SIEMPRE este orden:
    a) **Plan**: presenta el plan de implementación paso a paso — qué archivos se van a
@@ -75,6 +76,61 @@ depreciación "reales" — este proyecto usa sus propias constantes simplificada
     antes de crear la feature branch, y que los cambios a `develop` entren por pull
     request revisada (excepto archivos de coordinación). Si algo se desvía, detener y
     corregir antes de continuar.
+
+## Guía especial: Leslie (nueva en OpenCode)
+
+Leslie es nueva en OpenCode y usa la versión de escritorio. Cuando ella inicie una
+conversación (ella lo dirá, o pregúntale si no está claro quién escribe), sigue este
+protocolo ANTES de cualquier tarea del proyecto.
+
+### 1. Primera sesión — verificar el entorno (nada de código todavía)
+
+a) Pregúntale qué sistema operativo usa (Windows, macOS o Linux) — la guía de
+   instalación depende de eso.
+b) Verifica que tenga instalado:
+   - Node.js: `node --version` y `npm --version`
+   - .NET SDK 8: `dotnet --version`
+   - Git: `git --version`
+   - SQL Server: según su SO (ej. `sqlcmd -?` en Windows, o que el servicio
+     `mssql-server` esté corriendo en Linux)
+c) Verifica que tenga el repo clonado en su máquina:
+   `git clone https://github.com/PabloToapanta/depreciacion-app.git` y que
+   `git status` funcione dentro de la carpeta.
+d) Verifica su base de datos: que existan AuthDB y AssetsDB con sus usuarios
+   (`auth_user`, `assets_user`). Si no existen, guíala para ejecutar
+   `scripts/modelo-datos.sql` con su usuario `sa` — ella define su propia
+   contraseña de `sa` al instalar SQL Server; el script crea las bases, los
+   usuarios y los datos de ejemplo.
+e) Verifica que pueda correr el proyecto en SU máquina:
+   - Frontend: `npm install` y luego `npm run dev` dentro de `frontend/`
+   - AuthService: `dotnet run` dentro de `backend/AuthService`
+   - AssetsService: `dotnet run` dentro de `backend/AssetsService`
+   Debe ver el login en el navegador (Vite) y Swagger en los puertos 5001/5002.
+f) SOLO cuando todo lo anterior funcione en su máquina, empieza con sus tareas
+   de TASKS.md. Si algo falta, primero se instala o configura — no se avanza
+   con código del proyecto hasta que el entorno esté listo.
+
+### 2. Cómo ejecutar comandos en OpenCode (versión de escritorio)
+
+- No necesita abrir una terminal aparte: puede escribir el comando en el chat y
+  el agente lo ejecuta por ella, explicándole qué hace antes y después.
+- Si quiere ejecutarlo ella misma, explícale que en OpenCode el agente ejecuta
+  los comandos con su herramienta de terminal: ella solo escribe la petición en
+  el chat (ej.: "corre npm run dev") y ve el resultado en la conversación.
+- Cada comando nuevo se explica en una frase: qué hace, qué debería ver como
+  resultado, y qué significa un error típico.
+
+### 3. Tono con Leslie
+
+Paciencia, cero jerga, explicar cada comando y cada concepto como si fuera la
+primera vez (para ella lo es). Comparar siempre con Java/SQL (JDBC, Swing). Si
+algo falla, aplicar la regla 7: causa probable primero, solución después.
+
+### 4. Git para Leslie
+
+Guiarla paso a paso: `git pull` de `develop`, crear feature branch, commits
+atómicos con mensajes descriptivos, push y pull request. No asumas que sabe
+Git; verifica cada paso con ella antes de continuar (regla 10 aplica igual).
 
 ## Recordatorios técnicos fijos del proyecto
 
