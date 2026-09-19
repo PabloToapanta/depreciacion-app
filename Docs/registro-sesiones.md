@@ -48,3 +48,39 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
 - Día 2 — Login con JWT:
   - Pablo: endpoint de login en AuthService + generación/firma de JWT.
   - Leslie: tutorial de React (useState, fetch) + pantalla de login que consume AuthService.
+
+## Sesión 2 — Día 2: Login con JWT, parte backend (19/09/2026, escribió Pablo)
+
+### Lo que se hizo
+- Feature branch `feature/auth-login` (Pablo, backend).
+- Infraestructura de datos en AuthService:
+  - Paquetes NuGet: `Microsoft.EntityFrameworkCore.SqlServer` 8.0.11 y
+    `Microsoft.AspNetCore.Authentication.JwtBearer` 8.0.11 (versión 8.x porque el
+    proyecto apunta a net8.0; la 10.x requiere .NET 10).
+  - Modelo `Usuario` (mapea tabla `Usuarios` con DataAnnotations, ~ @Entity de JPA).
+  - `AuthDbContext` (DbContext con `DbSet<Usuario>`, ~ EntityManager).
+  - Connection string en `appsettings.json` con el login `auth_user` (no `sa`).
+  - Configuración JWT en `appsettings.json`: Key, Issuer, Audience, ExpireMinutes.
+- DTOs: `LoginRequest` y `LoginResponse`.
+- `AuthController` con `POST /api/auth/login`:
+  - Busca el usuario por nombre (LINQ), verifica el hash con `BCrypt.Verify`.
+  - Credenciales inválidas → 401 con mensaje genérico (no revela si el usuario existe).
+  - Credenciales válidas → 200 con JWT firmado.
+- `JwtService`: genera y firma el token (HS256, clave secreta de appsettings).
+
+### Pruebas realizadas (curl contra http://localhost:5001)
+- `admin` / `Admin123!` → **200** con token JWT (header/payload/firma verificados).
+- `admin` / clave incorrecta → **401**.
+- usuario inexistente → **401**.
+
+### Decisiones / notas
+- El JWT se genera en un servicio separado (`JwtService`) para mantener el controller
+  limpio y reutilizar la lógica el día 4 (validación en AssetsService).
+- El mensaje de error es el mismo para usuario inexistente y clave mala (seguridad:
+  no dar pistas de qué usuarios existen).
+- `feature/auth-login` mergeada a `develop`. **Excepción documentada:** Leslie no
+  revisó el PR por no estar disponible; revisará al volver.
+
+### Pendientes
+- Día 2 — parte frontend (Leslie): tutorial de React + pantalla de login.
+- Día 3 — Pablo: endpoints de activos y depreciación en AssetsService.
