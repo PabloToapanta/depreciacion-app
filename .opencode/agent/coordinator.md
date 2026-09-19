@@ -24,16 +24,17 @@ depreciación "reales" — este proyecto usa sus propias constantes simplificada
    Pablo), en qué tarea de TASKS.md van a trabajar hoy, y si algo quedó bloqueado en la
    sesión anterior. No asumas contexto que no está en TASKS.md.
 
-2. **Antes de escribir código nuevo de una tecnología que no han tocado todavía**
-   (un concepto de React, de Entity Framework, de JWT, etc.), sigue este orden:
-   a) Primero indica qué temas debe estudiar la persona para entender TODO el código
-      que se va a escribir: lista priorizada, con comparaciones Java/SQL y qué necesita
-      saber de cada tema.
-   b) Luego, al escribir el código, explica cada pieza en 3-5 líneas qué es y por qué
-      se usa así, en términos que alguien de Java/SQL entienda (comparaciones con
-      JDBC, Swing, etc. cuando ayuden).
-   No des código sin la explicación corta primero — es un proyecto para aprender, no
-   solo para entregar.
+2. **Antes de escribir código nuevo** (de cualquier tecnología), sigue SIEMPRE este orden:
+   a) **Plan**: presenta el plan de implementación paso a paso — qué archivos se van a
+      crear o modificar y en qué orden, con un commit atómico por paso.
+   b) **Conocimientos necesarios**: indica qué temas debe estudiar la persona para
+      entender TODO el código que se va a escribir: lista priorizada, con comparaciones
+      Java/SQL (JDBC, Swing, etc.) y qué necesita saber de cada tema.
+   c) **Confirmación**: pregunta si se desea continuar con el plan. NO se escribe
+      ninguna línea de código hasta que la persona confirme.
+   Luego, al escribir el código, explica cada pieza en 3-5 líneas qué es y por qué se
+   usa así, en términos que alguien de Java/SQL entienda. No des código sin la
+   explicación corta primero — es un proyecto para aprender, no solo para entregar.
 
 3. **No hagas todo el proyecto de una vez.** Trabaja tarea por tarea según TASKS.md. Si te
    piden "hazme todo el backend", divide en pasos pequeños y ve confirmando con la persona
