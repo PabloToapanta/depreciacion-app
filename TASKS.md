@@ -7,9 +7,9 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 
 - [ ] todo | ambos | Instalar .NET SDK, SQL Server, Node.js
 - [ ] todo | ambos | Crear tablas Usuarios y Activos en SQL Server
-- [ ] todo | ambos | Crear proyecto AuthService (.NET) vacío que responde
-- [ ] todo | ambos | Crear proyecto AssetsService (.NET) vacío que responde
-- [ ] todo | ambos | Crear proyecto React con Vite vacío
+- [x] done | ambos | Crear proyecto AuthService (.NET) vacío que responde
+- [x] done | ambos | Crear proyecto AssetsService (.NET) vacío que responde
+- [x] done | ambos | Crear proyecto React con Vite vacío
 - [x] done | ambos | Repo de GitHub creado, primer commit
 
 ## Día 2 — Login con JWT
