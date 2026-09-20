@@ -180,3 +180,47 @@ Bitácora de trabajo del proyecto. La actualiza el coordinador al cierre de cada
 ### Pendientes
 - Día 3 — parte frontend (Leslie): formulario de activo + tabla en React.
 - Día 4 — ambos: JWT en header desde React, botón de PDF, prueba final de CORS.
+
+## Sesión 5 — Revisión del frontend de Leslie + integración (19/09/2026, escribió Pablo)
+
+### Lo que se hizo
+- Leslie trabajó en su rama `feature/frontend-app` (3 commits, parte de
+  `develop` actualizado):
+  - `2f2e213` feat(assets): endpoint GET /api/categorias (para el select del
+    formulario sin hardcodear ids).
+  - `32f361c` feat(frontend): login, formulario de activos, tabla de
+    depreciación y export PDF (window.print + CSS de impresión).
+  - `d846027` fix(scripts): modelo-datos.sql en UTF-8 con BOM para que sqlcmd
+    respete los acentos.
+- Pablo revisó el código (PR revisado por el compañero, como manda el flujo):
+  - `api.js` centraliza fetch + token en localStorage + helpers de formato.
+  - Componentes separados: Login, ActivoForm, DepreciacionTable.
+  - Validación en el formulario (precio > 0, fecha de corte >= fecha de compra).
+  - Manejo de errores con mensajes del backend.
+  - CSS de impresión correcto (oculta todo excepto #zona-impresion).
+- Prueba de integración completa (los 3 procesos arriba):
+  - Login admin/Admin123! → token OK.
+  - GET /api/categorias → 4 categorías con vida útil OK.
+  - POST /api/activos (Tecnología $900, 01/01/2023, corte 01/01/2026) OK.
+  - GET /api/activos/3/depreciacion → **verificación AGENTS.md PASA**
+    (VDM=22.5, 37 filas, real=90.0 en 01/01/2026).
+  - CORS desde el origen del frontend (http://localhost:5173) OK.
+  - Frontend sirve en :5173, build sin errores, dependencias mínimas
+    (solo react/react-dom, sin Redux ni TypeScript — cumple AGENTS.md).
+
+### Retroalimentación a Leslie (entregada en la sesión)
+- Positivo: componentes separados, api.js centralizado, validaciones en el
+  formulario, manejo de errores, decisión de crear GET /api/categorias en
+  lugar de hardcodear ids, fix del BOM en el script SQL.
+- A mejorar: el commit `32f361c` es grande (todo el frontend en uno) — para
+  la próxima, commits atómicos por componente; typo menor en
+  `handleActivocreado` (debería ser `handleActivoCreado`).
+
+### Decisiones / notas
+- `feature/frontend-app` mergeada a `develop` tras revisión de Pablo.
+- El PDF se resuelve con window.print() + CSS de impresión (opción válida
+  según AGENTS.md: "lo que sea más rápido de integrar").
+
+### Pendientes
+- Día 5: probar 2-3 casos con los 4 tipos de activo, diagrama de
+  arquitectura, ensayar demo, release/v1.0 → main.
