@@ -1,121 +1,157 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { useEffect, useState } from 'react'
+import {
+  clearToken,
+  getToken,
+  listarActivos,
+  listarCategorias,
+  obtenerDepreciacion,
+  setToken,
+} from './api'
+import Login from './components/Login'
+import ActivoForm from './components/ActivoForm'
+import DepreciacionTable from './components/DepreciacionTable'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [sesion, setSesion] = useState(() => {
+    const token = getToken()
+    return token ? { token, usuario: localStorage.getItem('depreciacion_usuario') } : null
+  })
+  const [categorias, setCategorias] = useState([])
+  const [activos, setActivos] = useState([])
+  const [tabla, setTabla] = useState(null)
+  const [cargando, setCargando] = useState(false)
+  const [errorGlobal, setErrorGlobal] = useState('')
+
+  useEffect(() => {
+    if (!sesion) return
+    let activo = true
+
+    async function cargarDatos() {
+      setCargando(true)
+      setErrorGlobal('')
+      try {
+        const [cats, acts] = await Promise.all([listarCategorias(), listarActivos()])
+        if (!activo) return
+        setCategorias(cats)
+        setActivos(acts)
+      } catch (err) {
+        if (!activo) return
+        setErrorGlobal(err.message)
+      } finally {
+        if (activo) setCargando(false)
+      }
+    }
+
+    cargarDatos()
+    return () => {
+      activo = false
+    }
+  }, [sesion])
+
+  function handleLogin(data) {
+    setToken(data.token)
+    localStorage.setItem('depreciacion_usuario', data.nombreCompleto || data.username)
+    setSesion({ token: data.token, usuario: data.nombreCompleto || data.username })
+  }
+
+  function handleLogout() {
+    clearToken()
+    localStorage.removeItem('depreciacion_usuario')
+    setSesion(null)
+    setTabla(null)
+  }
+
+  async function cargarDepreciacion(id) {
+    setCargando(true)
+    setErrorGlobal('')
+    try {
+      const data = await obtenerDepreciacion(id)
+      setTabla(data)
+    } catch (err) {
+      setErrorGlobal(err.message)
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  async function handleActivocreado() {
+    setErrorGlobal('')
+    try {
+      const acts = await listarActivos()
+      setActivos(acts)
+    } catch (err) {
+      setErrorGlobal(err.message)
+    }
+  }
+
+  if (!sesion) {
+    return <Login onLogin={handleLogin} />
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+      <header className="barra-superior">
+        <h1>Depreciación App</h1>
+        <div className="usuario">
+          <span className="nombre-usuario">{sesion.usuario}</span>
+          <button className="boton enlace" type="button" onClick={handleLogout}>
+            Cerrar sesión
+          </button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      {errorGlobal && <p className="error banner">{errorGlobal}</p>}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <main className="contenido">
+        <section className="columna-izquierda">
+          {cargando && !categorias.length ? (
+            <p className="aviso">Cargando datos…</p>
+          ) : (
+            <ActivoForm
+              categorias={categorias}
+              onCreado={(activo) => {
+                cargarDepreciacion(activo.id)
+                handleActivocreado()
+              }}
+            />
+          )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          {activos.length > 0 && (
+            <div className="card lista-activos no-print">
+              <h2>Activos registrados</h2>
+              <ul>
+                {activos.map((a) => (
+                  <li key={a.id}>
+                    <button
+                      className="item-activo"
+                      type="button"
+                      onClick={() => cargarDepreciacion(a.id)}
+                    >
+                      <span className="nombre-activo">{a.nombre}</span>
+                      <span className="detalle-activo">
+                        {a.categoriaNombre} · ${Number(a.precioCompra).toFixed(2)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+
+        <section className="columna-derecha">
+          {cargando && <p className="aviso">Calculando…</p>}
+          {!cargando && tabla && <DepreciacionTable tabla={tabla} />}
+          {!cargando && !tabla && (
+            <p className="aviso">
+              Registra un activo o selecciona uno de la lista para ver su tabla de
+              depreciación.
+            </p>
+          )}
+        </section>
+      </main>
+    </div>
   )
 }
 

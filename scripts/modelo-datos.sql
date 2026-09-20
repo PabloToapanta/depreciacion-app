@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- Depreciacion App - Modelo de datos (feature/modelo-datos)
 -- Crea AuthDB y AssetsDB con sus tablas y datos semilla.
 -- Idempotente: se puede ejecutar varias veces sin romper nada.

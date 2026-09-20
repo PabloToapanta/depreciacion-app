@@ -17,21 +17,22 @@ actualizar este archivo en cada sesión. Estados válidos: `todo`, `doing`, `don
 
 - [x] done | Pablo | Endpoint de login en AuthService (valida usuario/clave)
 - [x] done | Pablo | Generación y firma de JWT
-- [ ] todo | Leslie | Tutorial rápido de React (useState, fetch)
-- [ ] todo | Leslie | Pantalla de login en React que consume AuthService
+- [x] done | Leslie | Tutorial rápido de React (useState, fetch)
+- [x] done | Leslie | Pantalla de login en React que consume AuthService
 
 ## Día 3 — Lógica de depreciación + formulario
 
 - [x] done | Pablo | Endpoint POST activo en AssetsService
 - [x] done | Pablo | Endpoint GET tabla de depreciación (aplica fórmulas de AGENTS.md)
-- [ ] todo | Leslie | Formulario de activo (tipo, precio, fecha compra, fecha corte)
-- [ ] todo | Leslie | Tabla en React que muestra el resultado
+- [x] done | Leslie | Formulario de activo (tipo, precio, fecha compra, fecha corte)
+- [x] done | Leslie | Tabla en React que muestra el resultado
+- [x] done | Leslie | Endpoint GET /api/categorias en AssetsService (para el select del formulario, sin hardcodear ids)
 
 ## Día 4 — Integración + PDF (ambos)
 
-- [ ] todo | ambos | JWT viajando en header Authorization desde React
+- [x] done | ambos | JWT viajando en header Authorization desde React
 - [x] done | Pablo | AssetsService valida el JWT antes de responder
-- [ ] todo | ambos | Botón de exportar a PDF funcionando
+- [x] done | ambos | Botón de exportar a PDF funcionando (window.print + CSS de impresión)
 - [x] done | Pablo | Resolver CORS entre servicios (config + verificación con curl; falta prueba final desde React)
 
 ## Día 5 — Pruebas y documentación (ambos)
