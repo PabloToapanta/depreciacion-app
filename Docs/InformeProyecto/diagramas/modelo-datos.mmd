@@ -1,0 +1,13 @@
+flowchart LR
+    subgraph AuthDB["AuthDB — SQL Server (solo AuthService)"]
+        U["USUARIOS<br/>id INT PK<br/>usuario NVARCHAR(50) UK<br/>password_hash NVARCHAR(100)<br/>nombre_completo NVARCHAR(100)<br/>fecha_creacion DATETIME2"]
+    end
+
+    subgraph AssetsDB["AssetsDB — SQL Server (solo AssetsService)"]
+        C["CATEGORIAS<br/>id INT PK<br/>nombre NVARCHAR(50) UK<br/>vida_util_anios INT"]
+        A["ACTIVOS<br/>id INT PK<br/>categoria_id INT FK<br/>nombre NVARCHAR(100)<br/>precio_compra DECIMAL(10,2)<br/>fecha_compra DATE<br/>fecha_corte DATE<br/>fecha_registro DATETIME2"]
+        C -->|"1:N — FK_Activos_Categorias (RESTRICT)"| A
+    end
+
+    Auth["AuthService.Api"] -->|"login auth_user<br/>db_datareader + db_datawriter"| AuthDB
+    Assets["AssetsService.Api"] -->|"login assets_user<br/>db_datareader + db_datawriter"| AssetsDB

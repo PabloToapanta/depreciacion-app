@@ -482,12 +482,75 @@ por constructor sin saber qué repositorio concreto hay detrás; cambiar
 línea de registro.
 
 \section{Modelo de datos}
-% TODO: por qué database-per-service
+
+\textbf{Database-per-service}: en una arquitectura de microservicios, cada
+servicio es dueño de sus propios datos; no comparte esquema ni tablas con
+otros servicios. Esto permite que cada base evolucione de forma independiente
+y que un servicio nunca dependa del esquema interno de otro.
+
+En este proyecto hay dos bases SQL Server separadas, creadas por el script
+\texttt{scripts/modelo-datos.sql} (idempotente):
+
+\begin{itemize}
+    \item \textbf{AuthDB} (solo AuthService): tabla \texttt{Usuarios} con el
+    hash BCrypt de la contraseña.
+    \item \textbf{AssetsDB} (solo AssetsService): master-detail
+    \texttt{Categorias} $\rightarrow$ \texttt{Activos}.
+\end{itemize}
+
+La relación maestro-detalle se define con una clave foránea con
+\texttt{NO ACTION} (RESTRICT): no se puede borrar una categoría que tenga
+activos. La vida útil vive en \texttt{Categorias}, no en el activo, para que
+un cambio de regla recalcule todos los activos existentes:
+
+\begin{lstlisting}[style=json, caption={scripts/modelo-datos.sql (fragmento)}]
+CREATE TABLE dbo.Categorias (
+    id              INT IDENTITY(1,1) PRIMARY KEY,
+    nombre          NVARCHAR(50) NOT NULL UNIQUE,
+    vida_util_anios INT          NOT NULL
+);
+
+CREATE TABLE dbo.Activos (
+    id             INT IDENTITY(1,1) PRIMARY KEY,
+    categoria_id   INT           NOT NULL,
+    nombre         NVARCHAR(100) NOT NULL,
+    precio_compra  DECIMAL(10,2) NOT NULL,
+    fecha_compra   DATE          NOT NULL,
+    fecha_corte    DATE          NOT NULL,
+    fecha_registro DATETIME2     NOT NULL DEFAULT GETDATE(),
+    CONSTRAINT FK_Activos_Categorias FOREIGN KEY (categoria_id)
+        REFERENCES dbo.Categorias(id)
+);
+\end{lstlisting}
+
+El principio de menor privilegio refuerza la separación: cada servicio se
+conecta con su propio login de SQL Server con acceso solo a su base, nunca
+con \texttt{sa}:
+
+\begin{lstlisting}[style=json, caption={scripts/modelo-datos.sql (fragmento)}]
+-- Login de AuthService
+CREATE LOGIN auth_user WITH PASSWORD = 'AuthUser123!';
+USE AuthDB;
+CREATE USER auth_user FOR LOGIN auth_user;
+ALTER ROLE db_datareader ADD MEMBER auth_user;
+ALTER ROLE db_datawriter ADD MEMBER auth_user;
+
+-- Login de AssetsService
+CREATE LOGIN assets_user WITH PASSWORD = 'AssetsUser123!';
+USE AssetsDB;
+CREATE USER assets_user FOR LOGIN assets_user;
+ALTER ROLE db_datareader ADD MEMBER assets_user;
+ALTER ROLE db_datawriter ADD MEMBER assets_user;
+\end{lstlisting}
+
+\textbf{Por qué aplica}: \texttt{auth\_user} solo puede leer/escribir en
+AuthDB y \texttt{assets\_user} solo en AssetsDB; si un servicio fuera
+comprometido, el atacante no tendría acceso a los datos del otro servicio.
 
 % Diagrama generado desde diagramas/modelo-datos.mmd -> diagramas/modelo-datos.png
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.8\textwidth]{diagramas/modelo-datos.png}
+    \includegraphics[width=0.8\textwidth]{diagramas/modelo-datos.png}
     \caption{Modelo entidad-relación}
     \label{fig:er}
 \end{figure}
