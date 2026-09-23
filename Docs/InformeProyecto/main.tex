@@ -749,7 +749,64 @@ y \texttt{Edificios\_100000\_Compra\_01\_01\_2023\_Corte\_01\_06\_2026\_Genera\_
 verifican exactamente las tablas descritas arriba.
 
 \section{Pruebas}
-% TODO: casos probados y por qué, con nombres reales de los métodos de test.
+
+La estrategia de pruebas se centra en la regla de negocio más crítica del
+sistema: la fórmula de depreciación. Por eso los tests son unitarios sobre
+\texttt{DepreciacionService} (la lógica pura del Domain, sin HTTP ni base de
+datos), usando xUnit en el proyecto \texttt{DepreciacionApp.Tests}. Se
+ejecutan con \texttt{dotnet test} sobre toda la solución.
+
+Los cuatro casos cubren los dos ejemplos oficiales de AGENTS.md y los dos
+límites del algoritmo:
+
+\begin{enumerate}
+    \item \texttt{Tecnologia\_900\_Compra\_22\_09\_2026\_Corte\_03\_08\_2027\_Genera\_Fila\_Inicial\_Y\_Parcial}:
+    ejemplo oficial 1. No cabe ningún año completo; valida el conteo de meses
+    completos (10 meses $\times$ 22.5 = 225) y la fila inicial.
+    \item \texttt{Edificios\_100000\_Compra\_01\_01\_2023\_Corte\_01\_06\_2026\_Genera\_3\_Anios\_Y\_Parcial}:
+    ejemplo oficial 2. Valida el bucle de aniversarios (3 años completos de
+    4500) y el resto parcial (5 meses $\times$ 375 = 1875), con el acumulado y
+    el valor real de cada fila.
+    \item \texttt{Corte\_En\_Aniversario\_Exacto\_No\_Genera\_Fila\_Parcial}:
+    caso borde. Si la fecha de corte coincide con un aniversario, el algoritmo
+    debe terminar sin fila parcial (1 año completo de 270, valor real 630).
+    \item \texttt{Corte\_Despues\_De\_Fin\_De\_VidaUtil\_Se\_Detiene\_En\_FinVidaUtil}:
+    caso borde. Si el corte supera el fin de vida útil, la tabla se detiene en
+    \texttt{finVidaUtil} con el valor real en el 10\% del precio (90 de 900).
+\end{enumerate}
+
+Un fragmento del primer test muestra el patrón: se construye el activo, se
+llama a \texttt{CalcularTabla} y se verifican las cuatro columnas de cada
+fila:
+
+\begin{lstlisting}[style=csharp, caption={DepreciacionApp.Tests/DepreciacionServiceTests.cs (fragmento)}]
+[Fact]
+public void Tecnologia_900_Compra_22_09_2026_Corte_03_08_2027_Genera_Fila_Inicial_Y_Parcial()
+{
+    var activo = new Activo
+    {
+        PrecioCompra = 900m,
+        FechaCompra = new DateTime(2026, 9, 22),
+        FechaCorte = new DateTime(2027, 8, 3)
+    };
+
+    var filas = new DepreciacionService().CalcularTabla(activo, Tecnologia);
+
+    Assert.Equal(2, filas.Count);
+    Assert.Equal(new DateTime(2026, 9, 22), filas[0].Fecha);
+    Assert.Equal(0m, filas[0].ValorDepreciacion);
+    Assert.Equal(900m, filas[0].ValorReal);
+    Assert.Equal(225m, filas[1].ValorDepreciacion);
+    Assert.Equal(675m, filas[1].ValorReal);
+}
+\end{lstlisting}
+
+\textbf{Por qué estos casos}: los dos primeros son los ejemplos de
+verificación oficiales de AGENTS.md (el criterio de aceptación del proyecto);
+los dos últimos ejercitan las condiciones límite del algoritmo (aniversario
+exacto y fin de vida útil), que son donde una implementación ingenua suele
+fallar. Los tests viejos de la tabla mensual se eliminaron porque ya no
+reflejan la regla corregida. Resultado actual: \textbf{4/4 tests pasan}.
 
 \section{Flujo de trabajo (Git)}
 % TODO: resumen del Git Flow simplificado.
