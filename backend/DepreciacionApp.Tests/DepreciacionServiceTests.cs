@@ -1,5 +1,5 @@
-using AssetsService.Models;
-using AssetsService.Services;
+using AssetsService.Domain.Entities;
+using AssetsService.Domain.Services;
 
 namespace DepreciacionApp.Tests;
 
