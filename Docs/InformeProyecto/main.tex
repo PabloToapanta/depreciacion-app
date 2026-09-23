@@ -866,6 +866,45 @@ con el movimiento de proyectos), de modo que cualquier fallo puede
 identificarse y revertirse por separado.
 
 \section{Conclusiones}
-% TODO: decisiones de alcance tomadas conscientemente.
+
+El sistema cumple el alcance definido: dos microservicios .NET Core con
+arquitectura Onion, autenticación JWT, fórmula de depreciación corregida y
+validada con tests, frontend React y exportación a PDF. Las siguientes
+decisiones de alcance se tomaron conscientemente y no son omisiones:
+
+\begin{itemize}
+    \item \textbf{Sin contenedores}: confirmado por el docente. El foco del
+    proyecto es la arquitectura de código y la separación de servicios, no la
+    infraestructura; cada servicio corre con su propio \texttt{dotnet run} en
+    su puerto.
+    \item \textbf{Sin API Gateway}: con dos servicios y un solo cliente, el
+    enrutamiento explícito en \texttt{frontend/src/api.js} (login $\rightarrow$
+    AuthService 5001; activos $\rightarrow$ AssetsService 5002) es más simple
+    y transparente que introducir un componente adicional.
+    \item \textbf{Sin resiliencia entre servicios} (retry, circuit breaker,
+    health checks): no hay cadena de llamadas entre servicios — el frontend
+    consume cada uno directamente —, así que el fallo de uno no tumba al otro
+    por diseño (independent operation). La resiliencia distribuida no aporta
+    valor en este alcance.
+    \item \textbf{Sin Redux ni TypeScript en el frontend}: el estado es
+    mínimo (token, formulario y tabla); los componentes funcionales con hooks
+    alcanzan. TypeScript se descartó para reducir la curva de aprendizaje del
+    equipo, que venía de Java y SQL.
+    \item \textbf{Export a PDF con \texttt{window.print()} y CSS
+    \texttt{@media print}} en lugar de una librería (jsPDF, React-PDF):
+    cumple el requisito sin agregar dependencias.
+    \item \textbf{Sin autenticación por roles}: el alcance académico solo
+    requiere login con JWT; no hay perfiles de usuario distintos.
+    \item \textbf{Sin HTTPS ni despliegue}: el proyecto corre en local; el
+    JWT viaja por HTTP solo en desarrollo.
+    \item \textbf{Sin transacciones distribuidas}: cada servicio es dueño de
+    su base (database-per-service) y ninguna operación requiere escribir en
+    ambas, por lo que no se necesitan transacciones entre servicios.
+\end{itemize}
+
+El resultado es un sistema donde la regla de negocio más importante (la
+depreciación) está aislada en el Domain, validada por tests unitarios contra
+los ejemplos oficiales, y donde la persistencia puede cambiarse sin tocar la
+lógica de negocio ni los casos de uso.
 
 \end{document}
