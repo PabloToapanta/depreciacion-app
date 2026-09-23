@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    participant React as React (Vite :5173)
+    participant Auth as AuthService.Api (:5001)
+    participant UC as LoginUseCase
+    participant Repo as UsuarioRepository
+    participant DB as AuthDB
+    participant JWT as JwtService
+
+    React->>Auth: POST /api/auth/login {username, password}
+    Auth->>UC: LoginUseCase.EjecutarAsync(request)
+    UC->>Repo: ObtenerPorUsernameAsync(username)
+    Repo->>DB: SELECT * FROM Usuarios WHERE usuario = @username
+    DB-->>Repo: Usuario (o null)
+    Repo-->>UC: Usuario (o null)
+
+    alt usuario null o BCrypt.Verify = false
+        UC-->>Auth: null
+        Auth-->>React: 401 {mensaje: "Usuario o contraseña incorrectos"}
+    else credenciales válidas
+        UC->>JWT: GenerarToken(usuario)
+        JWT-->>UC: (token, expiraEn)
+        UC-->>Auth: LoginResponse {token, expiraEn}
+        Auth-->>React: 200 {token, expiraEn}
+        React->>React: localStorage.setItem("depreciacion_token", token)
+    end

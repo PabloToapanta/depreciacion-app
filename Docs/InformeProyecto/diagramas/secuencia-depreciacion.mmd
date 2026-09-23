@@ -1,0 +1,44 @@
+sequenceDiagram
+    autonumber
+    participant React as React (Vite :5173)
+    participant Assets as AssetsService.Api (:5002)
+    participant Crear as CrearActivoUseCase
+    participant CatRepo as CategoriaRepository
+    participant ActRepo as ActivoRepository
+    participant DB as AssetsDB
+    participant Calc as CalcularDepreciacionUseCase
+    participant Dep as DepreciacionService
+
+    Note over React,Assets: 1) Creación del activo
+    React->>Assets: POST /api/activos (Authorization: Bearer JWT)
+    Assets->>Assets: Middleware valida JWT (401 si inválido)
+    Assets->>Crear: CrearActivoUseCase.EjecutarAsync(request)
+    Crear->>CatRepo: ObtenerPorIdAsync(categoriaId)
+    CatRepo->>DB: SELECT * FROM Categorias WHERE id = @id
+    DB-->>CatRepo: Categoria
+    CatRepo-->>Crear: Categoria (o null)
+
+    alt categoria no existe
+        Crear-->>Assets: null
+        Assets-->>React: 400 {mensaje}
+    else categoria válida
+        Crear->>ActRepo: CrearAsync(activo)
+        ActRepo->>DB: INSERT INTO Activos
+        DB-->>ActRepo: Activo con id
+        ActRepo-->>Crear: Activo
+        Crear-->>Assets: ActivoResponse
+        Assets-->>React: 201 {activo}
+    end
+
+    Note over React,Assets: 2) Consulta de la tabla de depreciación
+    React->>Assets: GET /api/activos/{id}/depreciacion (Bearer JWT)
+    Assets->>Assets: Middleware valida JWT (401 si inválido)
+    Assets->>Calc: CalcularDepreciacionUseCase.EjecutarAsync(id)
+    Calc->>ActRepo: ObtenerConCategoriaAsync(id)
+    ActRepo->>DB: SELECT Activos JOIN Categorias WHERE id = @id
+    DB-->>ActRepo: Activo + Categoria
+    ActRepo-->>Calc: Activo con Categoria
+    Calc->>Dep: CalcularTabla(activo, categoria)
+    Dep-->>Calc: List&lt;FilaDepreciacion&gt;
+    Calc-->>Assets: TablaDepreciacionResponse
+    Assets-->>React: 200 {filas}

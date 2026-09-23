@@ -558,18 +558,59 @@ comprometido, el atacante no tendría acceso a los datos del otro servicio.
 \section{Flujos principales}
 
 \subsection{Autenticación}
+
+El flujo de login recorre el frontend, el \texttt{LoginUseCase} de
+Application y los puertos de Infrastructure:
+
+\begin{enumerate}
+    \item El usuario ingresa usuario y contraseña en React; \texttt{api.js}
+    hace \texttt{POST /api/auth/login} hacia AuthService (puerto 5001).
+    \item \texttt{AuthController} delega en \texttt{LoginUseCase.EjecutarAsync}.
+    \item El caso de uso busca el usuario por nombre vía
+    \texttt{IUsuarioRepository.ObtenerPorUsernameAsync} (EF Core consulta
+    AuthDB).
+    \item Si el usuario no existe, o \texttt{BCrypt.Verify} no coincide con el
+    hash guardado, el caso de uso devuelve \texttt{null} y el controlador
+    responde \texttt{401} con el mismo mensaje (no revela si el usuario
+    existe).
+    \item Con credenciales válidas, \texttt{IJwtService.GenerarToken} firma el
+    JWT (HS256) y el controlador responde \texttt{200} con el token.
+    \item React guarda el token en \texttt{localStorage} y lo reutiliza en el
+    header \texttt{Authorization: Bearer} para las llamadas a AssetsService.
+\end{enumerate}
+
 % Diagrama generado desde diagramas/secuencia-login.mmd -> diagramas/secuencia-login.png
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.9\textwidth]{diagramas/secuencia-login.png}
+    \includegraphics[width=0.9\textwidth]{diagramas/secuencia-login.png}
     \caption{Secuencia de login}
 \end{figure}
 
 \subsection{Creación y consulta de depreciación}
+
+El flujo de activos tiene dos partes: primero se crea el activo y luego se
+consulta su tabla de depreciación. Ambas requieren un JWT válido, que el
+middleware de AssetsService valida antes de ejecutar el controlador:
+
+\begin{enumerate}
+    \item \textbf{Creación}: React hace \texttt{POST /api/activos} con el
+    token; \texttt{CrearActivoUseCase} valida que la categoría exista
+    (\texttt{ICategoriaRepository}) y persiste el activo
+    (\texttt{IActivoRepository}); responde \texttt{201} con el activo creado,
+    o \texttt{400} si la categoría no existe.
+    \item \textbf{Consulta}: React hace \texttt{GET /api/activos/\{id\}/depreciacion};
+    \texttt{CalcularDepreciacionUseCase} obtiene el activo con su categoría
+    (\texttt{IActivoRepository.ObtenerConCategoriaAsync}) y delega el cálculo
+    en \texttt{DepreciacionService.CalcularTabla} (regla de negocio pura del
+    Domain).
+    \item El caso de uso arma la \texttt{TablaDepreciacionResponse} con las
+    filas anuales y el controlador responde \texttt{200}.
+\end{enumerate}
+
 % Diagrama generado desde diagramas/secuencia-depreciacion.mmd -> diagramas/secuencia-depreciacion.png
 \begin{figure}[h]
     \centering
-    % \includegraphics[width=0.9\textwidth]{diagramas/secuencia-depreciacion.png}
+    \includegraphics[width=0.9\textwidth]{diagramas/secuencia-depreciacion.png}
     \caption{Secuencia de creación de activo y cálculo de depreciación}
 \end{figure}
 
