@@ -38,9 +38,34 @@
 \maketitle
 \tableofcontents
 \newpage
-
 \section{Introducción}
-% TODO (agente informe): qué hace el sistema, alcance, tecnologías y por qué cada una.
+
+\textbf{Depreciación App} es un sistema web para la gestión de activos fijos y
+el cálculo de su depreciación. El usuario inicia sesión, registra un activo
+(tipo, precio de compra, fecha de compra y fecha de corte) y el sistema
+genera la \textbf{tabla anual de depreciación} —con una posible fila final
+parcial en meses—, que puede exportarse a PDF desde el frontend.
+
+El alcance cubre: autenticación con JWT, CRUD de activos, cálculo de
+depreciación según la fórmula definida en AGENTS.md, y exportación a PDF. El
+sistema se compone de dos microservicios .NET Core independientes
+(\texttt{AuthService} en el puerto 5001 y \texttt{AssetsService} en el 5002),
+cada uno con su propia base de datos SQL Server y su propia arquitectura
+Onion de cuatro proyectos.
+
+Tecnologías usadas y por qué:
+
+\begin{itemize}
+    \item \textbf{React (Vite)}: frontend SPA con componentes funcionales y
+    hooks, que Vite levanta en segundos y mantiene el estado mínimo sin
+    librerías adicionales.
+    \item \textbf{.NET Core Web API}: backend multiplataforma con soporte
+    nativo de JWT y EF Core, ideal para los dos servicios independientes.
+    \item \textbf{SQL Server}: base de datos relacional, consistente con el
+    conocimiento SQL del equipo y con los permisos por usuario de acceso.
+    \item \textbf{JWT}: autenticación stateless; AssetsService valida el
+    token con el mismo secreto que AuthService, sin sesiones compartidas.
+\end{itemize}
 
 \section{Justificación de la arquitectura de microservicios}
 
