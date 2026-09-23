@@ -256,22 +256,230 @@ intercambiable que vive en \texttt{Infrastructure}.
 \section{Contraste de conceptos de Clean/Onion Architecture contra el código real}
 
 \subsection{Entidades de dominio}
-% TODO: definición + \begin{lstlisting}[style=csharp] ... \end{lstlisting} + por qué aplica
+
+\textbf{Definición}: las entidades son los objetos de negocio puros del núcleo
+de la aplicación: contienen datos y comportamiento de negocio, y no dependen
+de ninguna infraestructura (ni base de datos, ni HTTP, ni frameworks).
+
+En el proyecto, \texttt{Activo} vive en \texttt{AssetsService.Domain/Entities}
+y solo usa anotaciones del BCL de .NET (\texttt{System.ComponentModel.DataAnnotations}),
+nunca \texttt{EntityFrameworkCore}:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Domain/Entities/Activo.cs}]
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AssetsService.Domain.Entities;
+
+[Table("Activos")]
+public class Activo
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Column("categoria_id")]
+    public int CategoriaId { get; set; }
+
+    [Column("nombre")]
+    public string Nombre { get; set; } = string.Empty;
+
+    [Column("precio_compra")]
+    public decimal PrecioCompra { get; set; }
+
+    [Column("fecha_compra")]
+    public DateTime FechaCompra { get; set; }
+
+    [Column("fecha_corte")]
+    public DateTime FechaCorte { get; set; }
+
+    [Column("fecha_registro")]
+    public DateTime FechaRegistro { get; set; }
+
+    [ForeignKey("CategoriaId")]
+    public Categoria? Categoria { get; set; }
+}
+\end{lstlisting}
+
+\textbf{Por qué aplica}: la entidad se limita a modelar el activo con sus
+atributos y su relación con \texttt{Categoria}; al no importar EF Core, puede
+persistirse con cualquier motor sin modificar esta clase.
 
 \subsection{Reglas de negocio en el dominio}
-% TODO
+
+\textbf{Definición}: las reglas de negocio son el conocimiento del dominio que
+no depende de la tecnología; en Onion viven en el centro (Domain), aisladas de
+la base de datos y del HTTP.
+
+\texttt{DepreciacionService} contiene la fórmula oficial de depreciación
+(años completos + resto parcial en meses) sin ninguna referencia a
+persistencia ni a controladores:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Domain/Services/DepreciacionService.cs (fragmento)}]
+public class DepreciacionService
+{
+    public List<FilaDepreciacion> CalcularTabla(Activo activo, Categoria categoria)
+    {
+        // VD = VALOR_COMPRA - VALOR_COMPRA * 0.10
+        decimal valorDepreciable = activo.PrecioCompra - activo.PrecioCompra * 0.10m;
+
+        // VDA = VD / VIDA_UTIL_ANIOS ; VDM = VDA / 12
+        decimal vda = valorDepreciable / categoria.VidaUtilAnios;
+        decimal vdm = vda / 12;
+
+        DateTime finVidaUtil = activo.FechaCompra.AddYears(categoria.VidaUtilAnios);
+        DateTime limite = activo.FechaCorte < finVidaUtil ? activo.FechaCorte : finVidaUtil;
+        ...
+    }
+}
+\end{lstlisting}
+
+\textbf{Por qué aplica}: el método recibe entidades (\texttt{Activo},
+\texttt{Categoria}) y devuelve \texttt{FilaDepreciacion}; no sabe de dónde
+vienen los datos ni quién consume el resultado, por lo que la regla de negocio
+es probable de forma aislada (como en \texttt{DepreciacionApp.Tests}).
 
 \subsection{Casos de uso (capa de Aplicación)}
-% TODO
+
+\textbf{Definición}: los casos de uso orquestan la aplicación: reciben la
+petición, llaman a las reglas de negocio del Domain y a los puertos
+(interfaces), y devuelven el resultado; no contienen lógica de negocio propia.
+
+\texttt{CalcularDepreciacionUseCase} obtiene el activo con su categoría a
+través del puerto \texttt{IActivoRepository} y delega el cálculo en el
+\texttt{DepreciacionService} del Domain:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Application/UseCases/CalcularDepreciacionUseCase.cs}]
+public class CalcularDepreciacionUseCase
+{
+    private readonly IActivoRepository _activos;
+    private readonly DepreciacionService _depreciacion;
+
+    public CalcularDepreciacionUseCase(IActivoRepository activos, DepreciacionService depreciacion)
+    {
+        _activos = activos;
+        _depreciacion = depreciacion;
+    }
+
+    public async Task<TablaDepreciacionResponse?> EjecutarAsync(int id)
+    {
+        var activo = await _activos.ObtenerConCategoriaAsync(id);
+        if (activo == null || activo.Categoria == null) return null;
+
+        var filas = _depreciacion.CalcularTabla(activo, activo.Categoria);
+
+        return new TablaDepreciacionResponse
+        {
+            ActivoId = activo.Id,
+            Nombre = activo.Nombre,
+            Categoria = activo.Categoria.Nombre,
+            PrecioCompra = activo.PrecioCompra,
+            FechaCompra = activo.FechaCompra,
+            FechaCorte = activo.FechaCorte,
+            Filas = filas
+        };
+    }
+}
+\end{lstlisting}
+
+\textbf{Por qué aplica}: el caso de uso no sabe cómo se persiste el activo
+(eso lo decide Infrastructure) ni cómo se calcula la depreciación (eso lo
+decide Domain); solo coordina ambos.
 
 \subsection{Inversión de dependencias}
-% TODO: interfaz en Application + implementación en Infrastructure
+
+\textbf{Definición}: la dependencia apunta hacia las abstracciones, no hacia
+los detalles: Application define la interfaz (el ``qué'') e Infrastructure la
+implementa (el ``cómo''), de modo que el centro nunca conoce la
+infraestructura.
+
+La interfaz \texttt{IActivoRepository} vive en Application:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Application/Interfaces/IActivoRepository.cs}]
+public interface IActivoRepository
+{
+    Task<Activo?> ObtenerConCategoriaAsync(int id);
+    Task<List<Activo>> ListarAsync();
+    Task<Activo> CrearAsync(Activo activo);
+}
+\end{lstlisting}
+
+Y su implementación concreta con EF Core vive en Infrastructure:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Infrastructure/Persistence/ActivoRepository.cs}]
+public class ActivoRepository : IActivoRepository
+{
+    private readonly AssetsDbContext _db;
+
+    public ActivoRepository(AssetsDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<Activo?> ObtenerConCategoriaAsync(int id)
+        => await _db.Activos
+            .Include(a => a.Categoria)
+            .FirstOrDefaultAsync(a => a.Id == id);
+    ...
+}
+\end{lstlisting}
+
+\textbf{Por qué aplica}: Application dice ``necesito obtener un activo con su
+categoría'' y Infrastructure responde ``lo resuelvo con EF Core''; por eso
+Application no importa \texttt{Microsoft.EntityFrameworkCore} y el motor de
+persistencia es intercambiable.
 
 \subsection{DTOs como contrato de frontera}
-% TODO
+
+\textbf{Definición}: los DTOs son los objetos que cruzan la frontera de la
+aplicación (entrada/salida de la API); desacoplan el contrato JSON que ve el
+cliente de las entidades internas del dominio.
+
+\texttt{ActivoRequest} define exactamente lo que el cliente debe enviar al
+crear un activo, sin exponer campos internos como \texttt{Id} o
+\texttt{FechaRegistro}:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Application/DTOs/ActivoRequest.cs}]
+namespace AssetsService.Application.DTOs;
+
+public class ActivoRequest
+{
+    public int CategoriaId { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public decimal PrecioCompra { get; set; }
+    public DateTime FechaCompra { get; set; }
+    public DateTime FechaCorte { get; set; }
+}
+\end{lstlisting}
+
+\textbf{Por qué aplica}: el cliente envía y recibe DTOs (JSON), nunca la
+entidad \texttt{Activo} directamente; si el modelo interno cambia, el contrato
+de la API puede mantenerse estable.
 
 \subsection{Inyección de dependencias}
-% TODO: fragmento de Program.cs
+
+\textbf{Definición}: el cableado final de las dependencias se hace en un único
+punto de composición (el \texttt{Program.cs} de la capa Api), registrando cada
+interfaz con su implementación concreta; los constructores solo reciben
+abstracciones.
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Api/Program.cs (fragmento)}]
+// Inversion de dependencias: Application define el puerto (interfaz),
+// Infrastructure la implementacion concreta. Api hace el registro.
+builder.Services.AddScoped<IActivoRepository, ActivoRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+
+// Regla de negocio pura (Domain).
+builder.Services.AddScoped<DepreciacionService>();
+
+// Casos de uso (Application): orquestan Domain + puertos.
+builder.Services.AddScoped<CrearActivoUseCase>();
+builder.Services.AddScoped<CalcularDepreciacionUseCase>();
+\end{lstlisting}
+
+\textbf{Por qué aplica}: los controladores reciben \texttt{CalcularDepreciacionUseCase}
+por constructor sin saber qué repositorio concreto hay detrás; cambiar
+\texttt{ActivoRepository} por otra implementación solo requiere tocar esta
+línea de registro.
 
 \section{Modelo de datos}
 % TODO: por qué database-per-service
