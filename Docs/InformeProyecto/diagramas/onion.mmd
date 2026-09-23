@@ -1,0 +1,27 @@
+flowchart TB
+    subgraph Api["Api — capa más externa<br/>Controllers + Program.cs (DI)"]
+        subgraph Infrastructure["Infrastructure<br/>DbContext, Repositories, JwtService, BCrypt"]
+            subgraph Application["Application<br/>Interfaces (puertos), DTOs, UseCases"]
+                subgraph Domain["Domain — núcleo, sin dependencias<br/>Entities + DepreciacionService"]
+                    D1["Activo, Categoria,<br/>Usuario, FilaDepreciacion"]
+                    D2["DepreciacionService<br/>(regla de negocio pura)"]
+                end
+            end
+        end
+    end
+
+    Application -->|"referencia SOLO a"| Domain
+    Infrastructure -->|"referencia a"| Application
+    Infrastructure -->|"referencia a"| Domain
+    Api -->|"referencia a los tres"| Infrastructure
+    Api -->|"referencia a"| Application
+    Api -->|"referencia a"| Domain
+
+    classDef domain fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
+    classDef app fill:#fff3cd,stroke:#ffc107,stroke-width:2px;
+    classDef infra fill:#d1e7dd,stroke:#198754,stroke-width:2px;
+    classDef api fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px;
+    class D1,D2 domain;
+    class Application app;
+    class Infrastructure infra;
+    class Api api;

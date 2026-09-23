@@ -1,0 +1,22 @@
+flowchart LR
+    subgraph Frontend["Frontend — React (Vite) en :5173"]
+        React["React SPA<br/>formularios + tabla de depreciación<br/>src/api.js decide a qué servicio llamar"]
+    end
+
+    subgraph Backend["Backend — dos servicios .NET 8 independientes"]
+        Auth["AuthService.Api<br/>puerto 5001<br/>login + firma JWT"]
+        Assets["AssetsService.Api<br/>puerto 5002<br/>CRUD activos + depreciación + valida JWT"]
+    end
+
+    subgraph Bases["Bases de datos — SQL Server (una por servicio)"]
+        AuthDB[("AuthDB<br/>tabla Usuarios")]
+        AssetsDB[("AssetsDB<br/>tablas Categorias y Activos")]
+    end
+
+    React -->|"POST /api/auth/login"| Auth
+    React -->|"GET /api/categorias"| Assets
+    React -->|"GET/POST /api/activos"| Assets
+    React -->|"GET /api/activos/{id}/depreciacion"| Assets
+
+    Auth -->|"EF Core"| AuthDB
+    Assets -->|"EF Core"| AssetsDB
