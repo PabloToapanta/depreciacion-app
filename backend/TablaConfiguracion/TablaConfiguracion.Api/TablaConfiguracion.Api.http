@@ -1,0 +1,7 @@
+@TablaConfiguracion.Api_HostAddress = http://localhost:5003
+
+GET {{TablaConfiguracion.Api_HostAddress}}/api/configuracion
+Accept: application/json
+Authorization: Bearer <token>
+
+###

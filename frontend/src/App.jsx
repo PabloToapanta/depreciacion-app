@@ -4,12 +4,14 @@ import {
   getToken,
   listarActivos,
   listarCategorias,
+  obtenerConfiguracion,
   obtenerDepreciacion,
   setToken,
 } from './api'
 import Login from './components/Login'
 import ActivoForm from './components/ActivoForm'
 import DepreciacionTable from './components/DepreciacionTable'
+import TablaConfiguracion from './components/TablaConfiguracion'
 import './App.css'
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
   })
   const [categorias, setCategorias] = useState([])
   const [activos, setActivos] = useState([])
+  const [configuracion, setConfiguracion] = useState(null)
   const [tabla, setTabla] = useState(null)
   const [cargando, setCargando] = useState(false)
   const [errorGlobal, setErrorGlobal] = useState('')
@@ -31,10 +34,11 @@ function App() {
       setCargando(true)
       setErrorGlobal('')
       try {
-        const [cats, acts] = await Promise.all([listarCategorias(), listarActivos()])
+        const [cats, acts, conf] = await Promise.all([listarCategorias(), listarActivos(), obtenerConfiguracion()])
         if (!activo) return
         setCategorias(cats)
         setActivos(acts)
+        setConfiguracion(conf)
       } catch (err) {
         if (!activo) return
         setErrorGlobal(err.message)
@@ -151,6 +155,10 @@ function App() {
           )}
         </section>
       </main>
+
+      <footer className="pie-configuracion">
+        <TablaConfiguracion configuracion={configuracion} />
+      </footer>
     </div>
   )
 }

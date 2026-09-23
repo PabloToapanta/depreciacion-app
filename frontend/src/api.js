@@ -1,5 +1,6 @@
 const AUTH_URL = 'http://localhost:5001'
 const ASSETS_URL = 'http://localhost:5002'
+const CONFIG_URL = 'http://localhost:5003'
 const TOKEN_KEY = 'depreciacion_token'
 
 // ---------- Sesion (token en localStorage) ----------
@@ -70,6 +71,11 @@ export async function obtenerDepreciacion(id) {
   return request(`${ASSETS_URL}/api/activos/${id}/depreciacion`, {
     headers: authHeaders(),
   })
+}
+
+// ---------- TablaConfiguracionService (puerto 5003) ----------
+export async function obtenerConfiguracion() {
+  return request(`${CONFIG_URL}/api/configuracion`, { headers: authHeaders() })
 }
 
 // ---------- Formateo ----------

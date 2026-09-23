@@ -279,6 +279,41 @@
   text-align: right;
 }
 
+/* ---------- Configuracion del sistema (pie de pagina) ---------- */
+.pie-configuracion {
+  margin-top: 24px;
+  padding: 0 24px 24px;
+}
+
+.tabla-configuracion {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.tabla-configuracion table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla-configuracion th,
+.tabla-configuracion td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.tabla-configuracion th {
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font-weight: 700;
+  width: 40%;
+}
+
+.tabla-configuracion tbody tr:nth-child(even) {
+  background: var(--bg-card);
+}
+
 /* ---------- Impresion (Exportar a PDF) ---------- */
 @media print {
   body * {

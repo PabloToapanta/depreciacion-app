@@ -1,6 +1,6 @@
 ﻿-- ============================================================
 -- Depreciacion App - Modelo de datos (feature/modelo-datos)
--- Crea AuthDB y AssetsDB con sus tablas y datos semilla.
+-- Crea AuthDB, AssetsDB y ConfigDB con sus tablas y datos semilla.
 -- Idempotente: se puede ejecutar varias veces sin romper nada.
 -- ============================================================
 
@@ -96,12 +96,44 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Activos_Categoria')
 GO
 
 -- ============================================================
+-- CONFIGDB (base del TablaConfiguracionService)
+-- Guarda los datos del sistema que se muestran en la tabla
+-- inferior del frontend: nombre, desarrolladores, version y fecha.
+-- ============================================================
+IF DB_ID('ConfigDB') IS NULL
+    CREATE DATABASE ConfigDB;
+GO
+
+USE ConfigDB;
+GO
+
+IF OBJECT_ID('dbo.configuracion') IS NULL
+BEGIN
+    CREATE TABLE dbo.configuracion (
+        id               INT IDENTITY(1,1) PRIMARY KEY,
+        nombre_sistema   NVARCHAR(100) NOT NULL,
+        nombres_apellidos NVARCHAR(200) NOT NULL,
+        version          NVARCHAR(20)  NOT NULL,
+        fecha            DATE          NOT NULL DEFAULT CAST(GETDATE() AS DATE)
+    );
+END
+GO
+
+-- Seed: la configuracion inicial del sistema (version 2.0).
+-- La fecha se completa con GETDATE() para que sea la fecha de hoy.
+INSERT INTO dbo.configuracion (nombre_sistema, nombres_apellidos, version)
+SELECT 'Depreciación App', 'Leslie Coello y Pablo Toapanta', '2.0'
+WHERE NOT EXISTS (SELECT 1 FROM dbo.configuracion);
+GO
+
+-- ============================================================
 -- USUARIOS DE ACCESO POR SERVICIO (principio de menor privilegio)
 -- Cada servicio se conecta con su PROPIO login de SQL Server,
 -- con acceso SOLO a su base. Nunca se usa 'sa' en las
 -- connection strings de los servicios.
---   auth_user   -> solo AuthDB    (AuthService)
---   assets_user -> solo AssetsDB  (AssetsService)
+--   auth_user    -> solo AuthDB    (AuthService)
+--   assets_user  -> solo AssetsDB  (AssetsService)
+--   config_user  -> solo ConfigDB  (TablaConfiguracionService)
 -- Permisos: db_datareader + db_datawriter (leer/escribir datos;
 -- las tablas ya existen, los servicios no necesitan crearlas).
 -- ============================================================
@@ -136,4 +168,20 @@ GO
 
 ALTER ROLE db_datareader ADD MEMBER assets_user;
 ALTER ROLE db_datawriter ADD MEMBER assets_user;
+GO
+
+-- Login de TablaConfiguracionService
+IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'config_user')
+    CREATE LOGIN config_user WITH PASSWORD = 'ConfigUser123!';
+GO
+
+USE ConfigDB;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = 'config_user')
+    CREATE USER config_user FOR LOGIN config_user;
+GO
+
+ALTER ROLE db_datareader ADD MEMBER config_user;
+ALTER ROLE db_datawriter ADD MEMBER config_user;
 GO
