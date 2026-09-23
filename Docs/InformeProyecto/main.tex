@@ -30,7 +30,7 @@
 }
 
 \title{Depreciacion App \\ \large Informe Técnico de Arquitectura}
-\author{[Nombre integrante 1] \\ [Nombre integrante 2]}
+\author{Coello Leslie \\ Pablo Toapanta}
 \date{\today}
 
 \begin{document}
@@ -43,11 +43,19 @@
 \textbf{Depreciación App} es un sistema web para la gestión de activos fijos y
 el cálculo de su depreciación. El usuario inicia sesión, registra un activo
 (tipo, precio de compra, fecha de compra y fecha de corte) y el sistema
-genera la \textbf{tabla anual de depreciación} —con una posible fila final
-parcial en meses—, que puede exportarse a PDF desde el frontend.
+genera la \textbf{tabla anual de depreciación} —una fila por año completo,
+más una posible fila final parcial en meses cuando la fecha de corte no cae
+en un aniversario exacto de la compra—, que puede exportarse a PDF desde el
+frontend.
 
-El alcance cubre: autenticación con JWT, CRUD de activos, cálculo de
-depreciación según la fórmula definida en AGENTS.md, y exportación a PDF. El
+El alcance cubre: autenticación con JWT, alta y consulta de activos, cálculo de
+depreciación según la fórmula definida en AGENTS.md, y exportación a PDF.
+\textbf{Nota de alcance: el sistema implementa C+R (crear y leer), no un CRUD
+completo.} No hay actualización ni borrado de activos porque la tabla de
+depreciación es un \emph{historial inmutable}: modificar o eliminar un activo
+ya calculado invalidaría o destruiría ese registro, que es justo lo que el
+sistema conserva. Esta decisión se repite y justifica en la sección de
+Conclusiones. El
 sistema se compone de dos microservicios .NET Core independientes
 (\texttt{AuthService} en el puerto 5001 y \texttt{AssetsService} en el 5002),
 cada uno con su propia base de datos SQL Server y su propia arquitectura
@@ -925,6 +933,16 @@ decisiones de alcance se tomaron conscientemente y no son omisiones:
     \item \textbf{Sin transacciones distribuidas}: cada servicio es dueño de
     su base (database-per-service) y ninguna operación requiere escribir en
     ambas, por lo que no se necesitan transacciones entre servicios.
+    \item \textbf{No es un CRUD completo: es C+R} (crear y leer). No hay
+    actualización ni borrado de activos, intencionalmente: la tabla de
+    depreciación es un \emph{historial inmutable} que se calcula a partir del
+    precio, la fecha de compra y la categoría. Permitir editar esos datos
+    (PUT) invalidaría las tablas ya calculadas, y el borrado (DELETE)
+    destruiría exactamente el registro que el sistema existe para conservar.
+    Por eso los únicos endpoints de \texttt{ActivosController} son
+    \texttt{POST} (crear), \texttt{GET} (listar/obtener) y \texttt{GET
+    /\{id\}/depreciacion} — coherente con la nota de alcance de la
+    Introducción.
 \end{itemize}
 
 El resultado es un sistema donde la regla de negocio más importante (la
