@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService", "AuthService\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetsService", "AssetsService\AssetsService.csproj", "{9267D6D2-1414-410B-A600-58A2F23BEACF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DepreciacionApp.Tests", "DepreciacionApp.Tests\DepreciacionApp.Tests.csproj", "{E2064AAC-6296-4FF4-87BD-A523AE50ADF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{9267D6D2-1414-410B-A600-58A2F23BEACF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9267D6D2-1414-410B-A600-58A2F23BEACF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9267D6D2-1414-410B-A600-58A2F23BEACF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2064AAC-6296-4FF4-87BD-A523AE50ADF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2064AAC-6296-4FF4-87BD-A523AE50ADF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2064AAC-6296-4FF4-87BD-A523AE50ADF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2064AAC-6296-4FF4-87BD-A523AE50ADF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
