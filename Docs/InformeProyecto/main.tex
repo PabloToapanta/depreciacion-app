@@ -809,7 +809,61 @@ fallar. Los tests viejos de la tabla mensual se eliminaron porque ya no
 reflejan la regla corregida. Resultado actual: \textbf{4/4 tests pasan}.
 
 \section{Flujo de trabajo (Git)}
-% TODO: resumen del Git Flow simplificado.
+
+Se usa un \textbf{Git Flow simplificado} adaptado al tamaño del equipo (dos
+personas), definido en AGENTS.md:
+
+\begin{itemize}
+    \item \texttt{main}: siempre la versión funcional, la que se entrega al
+    final. Solo recibe código vía \texttt{release/*}.
+    \item \texttt{develop}: rama de integración diaria, donde se juntan ambos
+    integrantes.
+    \item \texttt{feature/*}: una por tarea (ej. \texttt{feature/auth-login},
+    \texttt{feature/onion-architecture}, \texttt{feature/frontend-tabla}).
+    \item \texttt{release/*}: se usa una sola vez, al final, cuando
+    \texttt{develop} ya está estable.
+    \item \texttt{hotfix/*}: solo si aparece un bug grave después de mergear
+    a \texttt{main}.
+\end{itemize}
+
+El flujo diario es: \texttt{git checkout develop \&\& git pull}, crear la
+rama \texttt{feature/nombre-tarea}, commits pequeños y descriptivos
+(\texttt{feat:}, \texttt{fix:}, \texttt{refactor:}, \texttt{chore:}),
+\texttt{git push origin feature/nombre-tarea} y pull request hacia
+\texttt{develop} revisada por el compañero.
+
+\textbf{Verificación de integración} (revisada por el coordinador en cada
+sesión): commits atómicos (un commit = un cambio lógico), nunca commitear
+directo en \texttt{main}, actualizar \texttt{develop} antes de crear una
+feature branch, y borrar las ramas feature locales y remotas después de
+mergear. Los archivos de coordinación (\texttt{AGENTS.md}, \texttt{TASKS.md},
+\texttt{Docs/}, \texttt{informe/}) se actualizan directamente en
+\texttt{develop}.
+
+El historial real del repositorio evidencia el flujo: ramas feature con
+commits atómicos por capa, mergeadas a \texttt{develop} con
+\texttt{--no-ff}, y documentación commiteada directo en \texttt{develop}:
+
+\begin{lstlisting}[style=json, caption={git log --oneline --graph (fragmento real)}]
+*   187a6e2 merge: feature/onion-architecture a develop
+|\
+| * 4030587 refactor: crea proyecto AuthService.Api con controller y DI
+| * 96d7597 refactor: crea proyecto AuthService.Infrastructure con DbContext
+| * 389ced8 fix: formula de depreciacion anual con resto parcial en meses
+| * 3751012 chore: actualiza AGENTS.md con formula corregida
+|/
+*   70e2750 merge: feature/frontend-app a develop
+|\
+| * 32f361c feat(frontend): login, formulario de activos, tabla y export PDF
+| * 2f2e213 feat(assets): agrega endpoint GET /api/categorias
+|/
+\end{lstlisting}
+
+\textbf{Por qué aplica}: cada \texttt{merge: feature/* a develop} corresponde
+a una tarea completa; los commits \texttt{fix:} y \texttt{refactor:} de la
+migración a Onion quedaron aislados (la corrección de la fórmula no se mezcló
+con el movimiento de proyectos), de modo que cualquier fallo puede
+identificarse y revertirse por separado.
 
 \section{Conclusiones}
 % TODO: decisiones de alcance tomadas conscientemente.
