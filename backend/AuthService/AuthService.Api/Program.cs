@@ -1,6 +1,8 @@
 using System.Reflection;
-using AuthService.Data;
-using AuthService.Services;
+using AuthService.Application.Interfaces;
+using AuthService.Application.UseCases;
+using AuthService.Infrastructure.Persistence;
+using AuthService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,12 +20,20 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
-// Registra el DbContext con la connection string de AuthDB (usuario auth_user).
+// --- Cableado de Onion Architecture (Api es la unica capa que conoce a todas) ---
+
+// Persistencia: el DbContext es un detalle de Infrastructure.
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AuthDB")));
 
-// Registra el servicio de generacion de JWT.
-builder.Services.AddScoped<JwtService>();
+// Inversion de dependencias: Application define el puerto (interfaz),
+// Infrastructure la implementacion concreta. Api hace el registro.
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Caso de uso (Application): orquesta Domain + puertos.
+builder.Services.AddScoped<LoginUseCase>();
 
 // CORS: permite que el frontend de React (Vite en :5173) llame a este servicio.
 // Sin esto, el navegador bloquea las peticiones entre origenes distintos.
