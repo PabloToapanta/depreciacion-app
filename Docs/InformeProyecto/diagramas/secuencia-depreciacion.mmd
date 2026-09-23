@@ -39,6 +39,6 @@ sequenceDiagram
     DB-->>ActRepo: Activo + Categoria
     ActRepo-->>Calc: Activo con Categoria
     Calc->>Dep: CalcularTabla(activo, categoria)
-    Dep-->>Calc: List&lt;FilaDepreciacion&gt;
+    Dep-->>Calc: filas de depreciacion
     Calc-->>Assets: TablaDepreciacionResponse
     Assets-->>React: 200 {filas}
