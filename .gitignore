@@ -22,3 +22,16 @@ Thumbs.db
 # === SQL Server local (si usan LocalDB) ===
 *.mdf
 *.ldf
+# === Archivos de coordinacion y docs markdown retirados del remoto
+# (se conservan SOLO en la maquina local; no deben volver al repo)
+AGENTS.md
+TASKS.md
+opencode.json
+.opencode/
+Docs/README.md
+Docs/modelo-datos.md
+Docs/registro-sesiones.md
+Docs/RegistroSesiones.md
+Docs/Registro-Sesiones.md
+frontend/README.md
+Docs/ExplicacionProyecto.odt
