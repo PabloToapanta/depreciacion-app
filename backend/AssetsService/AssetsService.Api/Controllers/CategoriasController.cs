@@ -1,10 +1,9 @@
-using AssetsService.Data;
-using AssetsService.DTOs;
+using AssetsService.Application.DTOs;
+using AssetsService.Application.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
-namespace AssetsService.Controllers;
+namespace AssetsService.Api.Controllers;
 
 // Lista las categorias (Tecnología, Vehículos, Edificios, Muebles) para que
 // el frontend llene el select del formulario sin hardcodear ids.
@@ -13,11 +12,11 @@ namespace AssetsService.Controllers;
 [Route("api/categorias")]
 public class CategoriasController : ControllerBase
 {
-    private readonly AssetsDbContext _db;
+    private readonly ListarCategoriasUseCase _listar;
 
-    public CategoriasController(AssetsDbContext db)
+    public CategoriasController(ListarCategoriasUseCase listar)
     {
-        _db = db;
+        _listar = listar;
     }
 
     /// <summary>
@@ -27,16 +26,5 @@ public class CategoriasController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(List<CategoriaResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Listar()
-    {
-        var categorias = await _db.Categorias
-            .OrderBy(c => c.Id)
-            .ToListAsync();
-
-        return Ok(categorias.Select(c => new CategoriaResponse
-        {
-            Id = c.Id,
-            Nombre = c.Nombre,
-            VidaUtilAnios = c.VidaUtilAnios
-        }));
-    }
+        => Ok(await _listar.EjecutarAsync());
 }

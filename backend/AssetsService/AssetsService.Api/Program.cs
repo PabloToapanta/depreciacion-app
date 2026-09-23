@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text;
-using AssetsService.Data;
-using AssetsService.Services;
+using AssetsService.Application.Interfaces;
+using AssetsService.Application.UseCases;
+using AssetsService.Domain.Services;
+using AssetsService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -21,12 +23,26 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(xmlPath);
 });
 
-// Registra el DbContext con la connection string de AssetsDB (usuario assets_user).
+// --- Cableado de Onion Architecture (Api es la unica capa que conoce a todas) ---
+
+// Persistencia: el DbContext es un detalle de Infrastructure.
 builder.Services.AddDbContext<AssetsDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("AssetsDB")));
 
-// Registra el servicio de calculo de depreciacion.
+// Inversion de dependencias: Application define el puerto (interfaz),
+// Infrastructure la implementacion concreta. Api hace el registro.
+builder.Services.AddScoped<IActivoRepository, ActivoRepository>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+
+// Regla de negocio pura (Domain).
 builder.Services.AddScoped<DepreciacionService>();
+
+// Casos de uso (Application): orquestan Domain + puertos.
+builder.Services.AddScoped<CrearActivoUseCase>();
+builder.Services.AddScoped<ListarActivosUseCase>();
+builder.Services.AddScoped<ObtenerActivoUseCase>();
+builder.Services.AddScoped<CalcularDepreciacionUseCase>();
+builder.Services.AddScoped<ListarCategoriasUseCase>();
 
 // CORS: permite que el frontend de React (Vite en :5173) llame a este servicio.
 // Sin esto, el navegador bloquea las peticiones entre origenes distintos.

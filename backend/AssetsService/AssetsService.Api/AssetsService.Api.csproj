@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Genera el archivo XML con los comentarios /// para que Swagger los muestre -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- No molesta con warnings por falta de comentarios XML en todo el codigo -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AssetsService.Application\AssetsService.Application.csproj" />
+    <ProjectReference Include="..\AssetsService.Infrastructure\AssetsService.Infrastructure.csproj" />
+    <ProjectReference Include="..\AssetsService.Domain\AssetsService.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
