@@ -615,7 +615,138 @@ middleware de AssetsService valida antes de ejecutar el controlador:
 \end{figure}
 
 \section{Corrección de la lógica de depreciación}
-% TODO: algoritmo años completos + resto parcial, ejemplo numérico oficial, código real.
+
+\textbf{El problema}: la primera versión de \texttt{DepreciacionService}
+generaba una tabla \textbf{mensual} (una fila por mes, sumando VDM en cada
+una). AGENTS.md exige una tabla \textbf{anual}: una fila por año completo con
+VDA, y si la fecha de corte no coincide con un aniversario exacto de la
+compra, una última fila \textbf{parcial} calculada en meses completos usando
+VDM solo para ese resto.
+
+\textbf{El algoritmo corregido} (AGENTS.md, sección ``Fórmula de
+depreciación (corregida)''):
+
+\begin{enumerate}
+    \item \texttt{VD = VALOR\_COMPRA - VALOR\_COMPRA $\times$ 0.10} (el activo
+    termina su vida útil en el 10\% de su valor de compra).
+    \item \texttt{VDA = VD / VIDA\_UTIL\_ANIOS} (depreciación por año
+    completo) y \texttt{VDM = VDA / 12} (depreciación por mes, solo para la
+    fila parcial final).
+    \item \texttt{finVidaUtil = fechaCompra.AddYears(vidaUtilAnios)} y
+    \texttt{limite = min(fechaCorte, finVidaUtil)}.
+    \item Fila inicial en la fecha de compra: depreciación 0, acumulado 0,
+    valor real = precio.
+    \item Para cada aniversario \texttt{n = 1, 2, 3...} que sea
+    $\le$ \texttt{limite}: fila de año completo con VDA. Si el aniversario
+    coincide exactamente con \texttt{limite}, terminar (no hay resto parcial).
+    \item Si sobra un período menor a un año, contar los \textbf{meses
+    completos} de calendario y agregar la fila parcial con
+    \texttt{meses $\times$ VDM}. El conteo ajusta por el día:
+    \texttt{meses = (hasta.Year - desde.Year) $\times$ 12 + (hasta.Month - desde.Month)},
+    y si \texttt{hasta.Day < desde.Day}, se resta 1.
+\end{enumerate}
+
+\textbf{Ejemplo oficial de verificación} (AGENTS.md): activo Tecnología de
+\$900, comprado el 22/09/2026, fecha de corte 03/08/2027.
+
+\begin{itemize}
+    \item \texttt{VDA = (900 $\times$ 0.9) / 3 = 270}; \texttt{VDM = 22.5}.
+    \item Entre 22/09/2026 y 03/08/2027 no cabe ni un año completo (el primer
+    aniversario, 22/09/2027, es posterior al corte).
+    \item Meses completos entre 22/09/2026 y 03/08/2027 = 10 (el mes 11
+    cerraría el 22/08/2027, posterior al corte).
+    \item Depreciación parcial = $10 \times 22.5 = 225$.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Fecha} & \textbf{Valor Depreciación} & \textbf{Acumulado} & \textbf{Valor Real} \\
+\hline
+22/09/2026 & 0 & 0 & 900.00 \\
+\hline
+03/08/2027 & 225.00 & 225.00 & 675.00 \\
+\hline
+\end{tabular}
+\end{center}
+
+El segundo ejemplo oficial (Edificios \$100000, compra 01/01/2023, corte
+01/06/2026) ejercita el caso con años completos: 3 filas de \$4500 (2024,
+2025 y 2026) más la fila parcial de $5 \times 375 = 1875$, totalizando 5
+filas.
+
+La implementación real en \texttt{AssetsService.Domain/Services/DepreciacionService.cs}
+sigue exactamente este algoritmo:
+
+\begin{lstlisting}[style=csharp, caption={AssetsService.Domain/Services/DepreciacionService.cs (fragmento)}]
+// VDA = VD / VIDA_UTIL_ANIOS (depreciacion por anio completo)
+// VDM = VDA / 12 (depreciacion por mes, SOLO para la fila parcial final)
+decimal vda = valorDepreciable / categoria.VidaUtilAnios;
+decimal vdm = vda / 12;
+
+// 1. finVidaUtil = fechaCompra.AddYears(vidaUtilAnios)
+DateTime finVidaUtil = activo.FechaCompra.AddYears(categoria.VidaUtilAnios);
+
+// 2. limite = min(fechaCorte, finVidaUtil)
+DateTime limite = activo.FechaCorte < finVidaUtil ? activo.FechaCorte : finVidaUtil;
+
+// 4. Para cada aniversario n = 1, 2, 3... que sea <= limite:
+//    fila de anio completo con VDA. Si el aniversario coincide exactamente
+//    con limite, terminar (no hay resto parcial).
+DateTime ultimoAniversario = activo.FechaCompra;
+for (int n = 1; ; n++)
+{
+    DateTime aniversario = activo.FechaCompra.AddYears(n);
+    if (aniversario > limite) break;
+
+    acumulado += vda;
+    filas.Add(new FilaDepreciacion
+    {
+        Fecha = aniversario,
+        ValorDepreciacion = vda,
+        ValorDepreciacionAcumulado = acumulado,
+        ValorReal = activo.PrecioCompra - acumulado
+    });
+    ultimoAniversario = aniversario;
+
+    if (aniversario == limite) return filas;
+}
+
+// 5. Resto parcial: contar MESES COMPLETOS de calendario y agregar
+//    la fila parcial con meses * VDM.
+int meses = ContarMesesCompletos(ultimoAniversario, limite);
+if (meses > 0)
+{
+    decimal depreciacionParcial = meses * vdm;
+    acumulado += depreciacionParcial;
+    filas.Add(new FilaDepreciacion
+    {
+        Fecha = limite,
+        ValorDepreciacion = depreciacionParcial,
+        ValorDepreciacionAcumulado = acumulado,
+        ValorReal = activo.PrecioCompra - acumulado
+    });
+}
+\end{lstlisting}
+
+El conteo de meses completos se implementa con la fórmula exacta de
+AGENTS.md, ajustando por el día:
+
+\begin{lstlisting}[style=csharp, caption={DepreciacionService.cs — conteo de meses completos}]
+private static int ContarMesesCompletos(DateTime desde, DateTime hasta)
+{
+    int meses = (hasta.Year - desde.Year) * 12 + (hasta.Month - desde.Month);
+    if (hasta.Day < desde.Day) meses--;
+    return meses;
+}
+\end{lstlisting}
+
+\textbf{Por qué aplica}: la corrección se hizo primero dentro del servicio
+original y se validó con los dos ejemplos oficiales en
+\texttt{DepreciacionApp.Tests} antes de migrar a Onion; los tests
+\texttt{Tecnologia\_900\_Compra\_22\_09\_2026\_Corte\_03\_08\_2027\_Genera\_Fila\_Inicial\_Y\_Parcial}
+y \texttt{Edificios\_100000\_Compra\_01\_01\_2023\_Corte\_01\_06\_2026\_Genera\_3\_Anios\_Y\_Parcial}
+verifican exactamente las tablas descritas arriba.
 
 \section{Pruebas}
 % TODO: casos probados y por qué, con nombres reales de los métodos de test.
